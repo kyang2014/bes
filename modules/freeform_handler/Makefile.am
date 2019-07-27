@@ -31,12 +31,12 @@ libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 libff_module_la_LDFLAGS = -avoid-version -module 
 libff_module_la_LIBADD = $(LIBADD) 
 
-FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
+FFTYPE_SRC = FFTypeFactory.cc FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
 	FFFloat32.cc FFInt16.cc FFStr.cc FFUInt32.cc FFD4Sequence.cc
 
 
-FFTYPE_HDR = FFArray.h FFFloat32.h FFInt16.h FFStr.h FFUInt32.h	\
+FFTYPE_HDR = FFTypeFactory.h FFArray.h FFFloat32.h FFInt16.h FFStr.h FFUInt32.h	\
 	FFByte.h FFFloat64.h FFInt32.h FFStructure.h FFUrl.h	\
 	FFGrid.h FFSequence.h FFUInt16.h FFD4Sequence.h
 
