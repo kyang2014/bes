@@ -105,79 +105,79 @@ BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
 Byte *
 FFTypeFactory::NewByte(const string &n ) const 
 { 
-    return new FFByte(n,"");
+    return new FFByte(n,fd_name);
 }
 
 Int16 *
 FFTypeFactory::NewInt16(const string &n ) const 
 { 
-    return new FFInt16(n,""); 
+    return new FFInt16(n,fd_name); 
 }
 
 UInt16 *
 FFTypeFactory::NewUInt16(const string &n ) const 
 { 
-    return new FFUInt16(n,"");
+    return new FFUInt16(n,fd_name);
 }
 
 Int32 *
 FFTypeFactory::NewInt32(const string &n ) const 
 { 
     DBG(cerr << "Inside FFTypeFactory::NewInt32" << endl);
-    return new FFInt32(n,"");
+    return new FFInt32(n,fd_name);
 }
 
 UInt32 *
 FFTypeFactory::NewUInt32(const string &n ) const 
 { 
-    return new FFUInt32(n,"");
+    return new FFUInt32(n,fd_name);
 }
 
 Float32 *
 FFTypeFactory::NewFloat32(const string &n ) const 
 { 
-    return new FFFloat32(n,"");
+    return new FFFloat32(n,fd_name);
 }
 
 Float64 *
 FFTypeFactory::NewFloat64(const string &n ) const 
 { 
-    return new FFFloat64(n,"");
+    return new FFFloat64(n,fd_name);
 }
 
 Str *
 FFTypeFactory::NewStr(const string &n ) const 
 { 
-    return new FFStr(n,"");
+    return new FFStr(n,fd_name);
 }
 
 Url *
 FFTypeFactory::NewUrl(const string &n ) const 
 { 
-    return new FFUrl(n,"");
+    return new FFUrl(n,fd_name);
 }
 
 Array *
 FFTypeFactory::NewArray(const string &n , BaseType *v) const 
 { 
-    return new FFArray(n,"",v,"");
+    return new FFArray(n,fd_name,v,fd_iff);
 }
 
 Structure *
 FFTypeFactory::NewStructure(const string &n ) const 
 { 
-    return new FFStructure(n,"");
+    return new FFStructure(n,fd_name);
 }
 
 Sequence *
 FFTypeFactory::NewSequence(const string &n ) const 
 {
     DBG(cerr << "Inside FFTypeFactory::NewSequence" << endl);
-    return new FFSequence(n,"","");
+    return new FFSequence(n,fd_name,fd_iff);
 }
 
 Grid *
 FFTypeFactory::NewGrid(const string &n ) const 
 { 
-    return new FFGrid(n,"");
+    return new FFGrid(n,fd_name);
 }

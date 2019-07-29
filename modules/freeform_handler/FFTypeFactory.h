@@ -46,6 +46,7 @@ class FFGrid;
 class FFTypeFactory : public libdap::BaseTypeFactory {
 public:
     FFTypeFactory() {} 
+    FFTypeFactory(const string & d_name,const string &d_iff):fd_name(d_name),fd_iff(d_iff) { }
     virtual ~FFTypeFactory() {}
 
     virtual libdap::BaseType *NewVariable(libdap::Type t, const std::string &name) const;
@@ -65,6 +66,9 @@ public:
     virtual libdap::Sequence *NewSequence(const std::string &n = "") const;
     virtual libdap::Grid *NewGrid(const std::string &n = "") const;
     //virtual libdap::D4Sequence *NewD4Sequence(const std::string &n="") const;
+private:
+    string fd_name;
+    string fd_iff;
 };
 
 #endif // ff_factory_h
