@@ -67,8 +67,9 @@
 #include "util_ff.h"
 
 #include "FFRequestHandler.h"
+#include "FFTypeFactory.h"
 
-void ff_read_descriptors(DDS &dds_table, const string &filename)
+void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
 {
     if (!file_exist(filename.c_str()))
         throw Error((string) "Could not open file " + path_to_filename(filename) + string("."));
@@ -147,6 +148,7 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
             throw Error(msg);
         }
 
+      if(false == use_fc) {
         bool newseq = true;
         bool is_array = true;
         for (int i = 0; i < num_names; i++) {
@@ -268,7 +270,7 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
                 delete bt;
                 newseq = true; // An array terminates the old sequence
                 is_array = true;
-                //} The follow loop was separate from this else clause but the
+                // The follow loop was separate from this else clause but the
                 // loop won't run if num_dim_names is not > 0
 
                 for (int j = 0; j < num_dim_names; j++) {
@@ -303,6 +305,172 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
 
         if (!is_array)
             dds_table.add_var_nocopy(seq);
+      }
+      else {
+
+        bool newseq = true;
+        bool is_array = true;
+
+        FFTypeFactory FreeFormFactory(filename,"");
+        dds_table.set_factory(&FreeFormFactory);
+        
+        for (int i = 0; i < num_names; i++) {
+            int num_dim_names = 0;
+
+            char *cp = NULL;
+
+            error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], &num_dim_names, &dim_names_vector);
+            if (error) {
+                string msg = "Could not get array dimension names for variable: ";
+                msg += (string) var_names_vector[i] + ", FreeForm error code: ";
+                append_long_to_string((long) error, 10, msg);
+                throw Error(msg);
+            }
+
+            if (num_dim_names == 0) // sequence names
+                cp = var_names_vector[i];
+            else {
+                cp = strstr(var_names_vector[i], "::");
+                // If cp is not null, advance past the "::"
+                if (cp)
+                    cp += 2;
+            }
+
+            pinfo_list = dll_first(pinfo_list);
+            PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
+            FORMAT_PTR iformat = PINFO_FORMAT(pinfo);
+            VARIABLE_PTR var = ff_find_variable(cp, iformat);
+
+            // For some formats Freefrom sends an extra EOL variable at the end of
+            // the list.
+            if (IS_EOL(var)) {
+                memFree(dim_names_vector, "**dim_names_vector");
+                dim_names_vector = NULL;
+                break;
+            }
+
+            while (!var) { // search formats in the format list for the variable
+                pinfo_list = (pinfo_list)->next;
+                pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
+
+                if (!pinfo) {
+                    string msg = "Variable " + (string)cp + " was not found in the format file.";
+                    throw Error(msg);
+                }
+
+                iformat = PINFO_FORMAT(pinfo);
+                var = ff_find_variable(cp, iformat);
+            }
+
+            string input_format_file = PINFO_ORIGIN(pinfo);
+            FreeFormFactory.set_fd_iff(input_format_file);
+            // STOP HERE. STRING, ARRAY Need special handling
+            BaseType *bt = NULL;
+            switch (FFV_DATA_TYPE(var)) {
+            case FFV_TEXT:
+                bt = new FFStr(cp, filename);
+                static_cast<FFStr&>(*bt).set_length(var->end_pos - var->start_pos + 1);
+                break;
+
+            case FFV_INT8:
+                bt = new FFByte(cp, filename);
+                break;
+
+            case FFV_UINT8:
+                bt = new FFByte(cp, filename); // Byte is unsigned.
+                break;
+
+            case FFV_INT16:
+                bt = new FFInt16(cp, filename);
+                break;
+
+            case FFV_UINT16:
+                bt = new FFUInt16(cp, filename);
+                break;
+
+            case FFV_INT32:
+                bt = new FFInt32(cp, filename);
+                break;
+
+            case FFV_UINT32:
+                bt = new FFUInt32(cp, filename);
+                break;
+
+            case FFV_INT64:
+                bt = new FFInt32(cp, filename); // Ouch!
+                break;
+
+            case FFV_UINT64:
+                bt = new FFUInt32(cp, filename);
+                break;
+
+            case FFV_FLOAT32:
+                bt = new FFFloat32(cp, filename);
+                break;
+
+            case FFV_FLOAT64:
+                bt = new FFFloat64(cp, filename);
+                break;
+
+            case FFV_ENOTE:
+                bt = new FFFloat64(cp, filename);
+                break;
+
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
+            }
+
+            if (num_dim_names == 0) {
+                if (!seq || newseq) {
+                    newseq = false;
+                    // The format name cannot contain spaces! 8/12/98 jhrg
+                    seq = new FFSequence(iformat->name, filename, input_format_file);
+                }
+                seq->add_var_nocopy(bt);
+                is_array = false;
+            }
+            else {
+                ar = new FFArray(cp, filename, bt, input_format_file);
+                delete bt;
+                newseq = true; // An array terminates the old sequence
+                is_array = true;
+                // The follow loop was separate from this else clause but the
+                // loop won't run if num_dim_names is not > 0
+
+                for (int j = 0; j < num_dim_names; j++) {
+                    FF_ARRAY_DIM_INFO_PTR array_dim_info = NULL;
+
+                    error = db_ask(dbin, DBASK_ARRAY_DIM_INFO, var_names_vector[i], dim_names_vector[j],
+                            &array_dim_info);
+                    if (error) {
+                        string msg = string("Could not get array dimension info for variable ")
+                                + string(var_names_vector[i]) + string(", FreeForm error code: ");
+                        append_long_to_string((long) error, 10, msg);
+                        throw Error(msg);
+                    }
+
+                    int DimSiz = (array_dim_info->end_index - array_dim_info->start_index + 1)
+                            / array_dim_info->granularity;
+                    ar->append_dim(DimSiz, (string) dim_names_vector[j]);
+
+                    memFree(array_dim_info, "");
+                    array_dim_info = NULL;
+                }
+            }
+
+            memFree(dim_names_vector, "**dim_names_vector");
+            dim_names_vector = NULL;
+
+            if (is_array)
+                dds_table.add_var_nocopy(ar);
+            else if (newseq)
+                dds_table.add_var_nocopy(seq);
+        } // End of the for num_names.
+
+        if (!is_array)
+            dds_table.add_var_nocopy(seq);
+      }
+
     }
     catch (...) {
         // Because these are added to the DDS using the nocopy methods,

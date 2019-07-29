@@ -88,7 +88,7 @@ BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
 		return NewUrl(name);
 
 	case dods_array_c:
-		return NewArray(name);
+		return NewArray(name,fbt);
 
 	case dods_structure_c:
 		return NewStructure(name);

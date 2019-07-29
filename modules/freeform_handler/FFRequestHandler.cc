@@ -64,6 +64,8 @@
 #include "ff_ce_functions.h"
 #include "util_ff.h"
 
+//#include "FFTypeFactory.h"
+
 using namespace libdap;
 using namespace std;
 
@@ -73,7 +75,7 @@ long BufPtr = 0; // cache pointer
 long BufSiz = 0; // Cache size
 char *BufVal = NULL; // cache buffer
 
-extern void ff_read_descriptors(DDS & dds, const string & filename);
+extern void ff_read_descriptors(DDS & dds, const string & filename,bool use_fc);
 extern void ff_get_attributes(DAS & das, string filename);
 
 bool FFRequestHandler::d_RSS_format_support = false;
@@ -217,10 +219,12 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
+        //FFTypeFactory FreeFormFactory(accessed,"");
+        //dds->set_factory(&FreeFormFactory);
 
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, accessed: " << accessed << endl);
 
-        ff_read_descriptors(*dds, accessed);
+        ff_read_descriptors(*dds, accessed,true);
 
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, reading attributes" << endl);
 
@@ -268,7 +272,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
-        ff_read_descriptors(*dds, accessed);
+        ff_read_descriptors(*dds, accessed,false);
         Ancillary::read_ancillary_dds(*dds, accessed);
 
         DAS *das = new DAS;
@@ -317,11 +321,12 @@ bool FFRequestHandler::ff_build_dmr(BESDataHandlerInterface &dhi)
 	string data_path = dhi.container->access();
 
 	BaseTypeFactory factory;
+    
 	DDS dds(&factory, name_path(data_path), "3.2");
 	dds.filename(data_path);
 
 	try {
-		ff_read_descriptors(dds, data_path);
+		ff_read_descriptors(dds, data_path,false);
 		// ancillary DDS objects never took off - this does nothing. jhrg 8/12/14
 		// Ancillary::read_ancillary_dds(*dds, data_path);
 
