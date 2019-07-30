@@ -60,7 +60,7 @@
 #include <BESContextManager.h>
 
 #include "FFRequestHandler.h"
-//#include "D4FFTypeFactory.h"
+#include "FFTypeFactory.h"
 #include "ff_ce_functions.h"
 #include "util_ff.h"
 
@@ -218,13 +218,22 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
-        dds->filename(accessed);
-        //FFTypeFactory FreeFormFactory(accessed,"");
-        //dds->set_factory(&FreeFormFactory);
+        //dds->filename(accessed);
+        FFTypeFactory FreeFormFactory(accessed,"");
+        dds->set_factory(&FreeFormFactory);
 
+        string dds_file_name = "ff_test.dds";
+
+        FILE* dds_file = fopen(dds_file_name.c_str(),"r");
+        if(dds_file == NULL){
+            cerr<<"cannot open dds"<<endl;
+            throw BESInternalError("Cannot open file from MDS error", __FILE__, __LINE__);
+        }
+        dds->parse(dds_file);
+        fclose(dds_file);
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, accessed: " << accessed << endl);
 
-        ff_read_descriptors(*dds, accessed,true);
+        //ff_read_descriptors(*dds, accessed,true);
 
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, reading attributes" << endl);
 
