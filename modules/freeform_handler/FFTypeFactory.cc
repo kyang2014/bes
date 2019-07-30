@@ -56,10 +56,10 @@ BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
 	case dods_byte_c:
 		return NewByte(name);
 	//case dods_char_c:
-	//	return NewChar(name);
+		//return NewByte(name);
 
 	//case dods_uint8_c:
-	//	return NewUInt8(name);
+	//	return NewByte(name);
 	//case dods_int8_c:
 	//	return NewInt8(name);
 
@@ -88,7 +88,8 @@ BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
 		return NewUrl(name);
 
 	case dods_array_c:
-		return NewArray(name,fbt);
+		//return NewArray(name,fbt);
+		return NewArray(name);
 
 	case dods_structure_c:
 		return NewStructure(name);

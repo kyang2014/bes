@@ -204,8 +204,18 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format, cha
         if (err_count()) {
             string message = freeform_error_message();
             BESDEBUG("ff", "FreeForm: error message " << message << endl);
+printf("dataset is %s\n",dataset);
+printf("if_file is %s\n",if_file);
+printf("o_format is %s\n",o_format);
+printf("bize is %d\n",bsize);
             throw BESError(message, BES_SYNTAX_USER_ERROR, __FILE__, __LINE__);
         }
+//#if 0
+printf("dataset is %s\n",dataset);
+printf("if_file is %s\n",if_file);
+printf("o_format is %s\n",o_format);
+printf("bize is %d\n",bsize);
+//#endif
 
         ff_destroy_bufsize(newform_log);
         ff_destroy_std_args(std_args);

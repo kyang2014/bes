@@ -280,14 +280,16 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
-
 #if 0
         dds->filename(accessed);
-        ff_read_descriptors(*dds, accessed,false);
+        ff_read_descriptors(*dds, accessed,true);
         Ancillary::read_ancillary_dds(*dds, accessed);
 #endif
-
-        FFTypeFactory FreeFormFactory(accessed,"");
+//#if 0
+        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
+        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/test0.fmt";
+        string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+        FFTypeFactory FreeFormFactory(accessed,db_file);
         dds->set_factory(&FreeFormFactory);
 
         string dds_file_name = "ff_test.dds";
@@ -301,6 +303,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         fclose(dds_file);
  
         Ancillary::read_ancillary_dds(*dds, accessed);
+//#endif
 
         DAS *das = new DAS;
         BESDASResponse bdas(das);
