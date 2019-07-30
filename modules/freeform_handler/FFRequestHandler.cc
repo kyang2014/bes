@@ -280,8 +280,26 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
+
+#if 0
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed,false);
+        Ancillary::read_ancillary_dds(*dds, accessed);
+#endif
+
+        FFTypeFactory FreeFormFactory(accessed,"");
+        dds->set_factory(&FreeFormFactory);
+
+        string dds_file_name = "ff_test.dds";
+
+        FILE* dds_file = fopen(dds_file_name.c_str(),"r");
+        if(dds_file == NULL){
+            cerr<<"cannot open dds"<<endl;
+            throw BESInternalError("Cannot open file from MDS error", __FILE__, __LINE__);
+        }
+        dds->parse(dds_file);
+        fclose(dds_file);
+ 
         Ancillary::read_ancillary_dds(*dds, accessed);
 
         DAS *das = new DAS;
