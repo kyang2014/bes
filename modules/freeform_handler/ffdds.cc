@@ -52,6 +52,7 @@
 #include "FreeFormCPP.h"
 
 #include <DDS.h>
+#include <BESDebug.h>
 
 #include "FFInt16.h"
 #include "FFUInt16.h"
@@ -308,6 +309,7 @@ void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
       }
       else {
 
+        BESDEBUG("ff", "FFRequestHandler::ff_build_dds, using factory class "  << endl);
         bool newseq = true;
         bool is_array = true;
 
@@ -368,52 +370,64 @@ void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
             BaseType *bt = NULL;
             switch (FFV_DATA_TYPE(var)) {
             case FFV_TEXT:
-                bt = new FFStr(cp, filename);
+                //bt = new FFStr(cp, filename);
+                bt = dds_table.get_factory()->NewStr(cp);
                 static_cast<FFStr&>(*bt).set_length(var->end_pos - var->start_pos + 1);
                 break;
 
             case FFV_INT8:
-                bt = new FFByte(cp, filename);
+                //bt = new FFByte(cp, filename);
+                bt = dds_table.get_factory()->NewByte(cp);
                 break;
 
             case FFV_UINT8:
-                bt = new FFByte(cp, filename); // Byte is unsigned.
+                //bt = new FFByte(cp, filename); // Byte is unsigned.
+                bt = dds_table.get_factory()->NewByte(cp);
                 break;
 
             case FFV_INT16:
-                bt = new FFInt16(cp, filename);
+                //bt = new FFInt16(cp, filename);
+                bt = dds_table.get_factory()->NewInt16(cp);
                 break;
 
             case FFV_UINT16:
-                bt = new FFUInt16(cp, filename);
+                //bt = new FFUInt16(cp, filename);
+                bt = dds_table.get_factory()->NewUInt16(cp);
                 break;
 
             case FFV_INT32:
-                bt = new FFInt32(cp, filename);
+                //bt = new FFInt32(cp, filename);
+                bt = dds_table.get_factory()->NewInt32(cp);
                 break;
 
             case FFV_UINT32:
-                bt = new FFUInt32(cp, filename);
+                //bt = new FFUInt32(cp, filename);
+                bt = dds_table.get_factory()->NewUInt32(cp);
                 break;
 
             case FFV_INT64:
-                bt = new FFInt32(cp, filename); // Ouch!
+                //bt = new FFInt32(cp, filename); // Ouch!
+                bt = dds_table.get_factory()->NewInt32(cp);
                 break;
 
             case FFV_UINT64:
-                bt = new FFUInt32(cp, filename);
+                //bt = new FFUInt32(cp, filename);
+                bt = dds_table.get_factory()->NewUInt32(cp);
                 break;
 
             case FFV_FLOAT32:
-                bt = new FFFloat32(cp, filename);
+                //bt = new FFFloat32(cp, filename);
+                bt = dds_table.get_factory()->NewFloat32(cp);
                 break;
 
             case FFV_FLOAT64:
-                bt = new FFFloat64(cp, filename);
+                //bt = new FFFloat64(cp, filename);
+                bt = dds_table.get_factory()->NewFloat64(cp);
                 break;
 
             case FFV_ENOTE:
-                bt = new FFFloat64(cp, filename);
+                //bt = new FFFloat64(cp, filename);
+                bt = dds_table.get_factory()->NewFloat64(cp);
                 break;
 
             default:
@@ -424,13 +438,15 @@ void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
                 if (!seq || newseq) {
                     newseq = false;
                     // The format name cannot contain spaces! 8/12/98 jhrg
-                    seq = new FFSequence(iformat->name, filename, input_format_file);
+                    //seq = new FFSequence(iformat->name, filename, input_format_file);
+                    seq = dds_table.get_factory()->NewSequence(iformat->name);
                 }
                 seq->add_var_nocopy(bt);
                 is_array = false;
             }
             else {
-                ar = new FFArray(cp, filename, bt, input_format_file);
+                //ar = new FFArray(cp, filename, bt, input_format_file);
+                ar = dds_table.get_factory()->NewArray(cp,bt);
                 delete bt;
                 newseq = true; // An array terminates the old sequence
                 is_array = true;
