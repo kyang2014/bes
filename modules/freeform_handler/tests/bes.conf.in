@@ -65,3 +65,12 @@ BES.DefaultResponseMethod=POST
 #-----------------------------------------------------------------------#
 FF.RegexFormatSupport=true
 FF.Regex = tb_.*n(19|22|37)(h|v).bin:@abs_top_srcdir@/modules/freeform_handler/data/n_low.fmt
+
+# MDS configuration - for the tests the read the DMR++ from the MDS,
+# use the saved/baseline MDS in data/mds_for_tests
+
+DAP.GlobalMetadataStore.path = @abs_top_builddir@/modules/freeform_handler/tests/mds_for_tests
+DAP.GlobalMetadataStore.prefix = mds_for_tests_
+DAP.GlobalMetadataStore.size = 0
+
+DAP.GlobalMetadataStore.ledger = @abs_top_builddir@/modules/freeform_handler/tests/mds_for_tests_ledger.txt
