@@ -63,6 +63,7 @@
 #include "FFTypeFactory.h"
 #include "ff_ce_functions.h"
 #include "util_ff.h"
+#include "FreeFormCPP.h"
 
 //#include "FFTypeFactory.h"
 
@@ -219,6 +220,7 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         //dds->filename(accessed);
+#if 0
         FFTypeFactory FreeFormFactory(accessed,"");
         dds->set_factory(&FreeFormFactory);
 
@@ -232,8 +234,9 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         dds->parse(dds_file);
         fclose(dds_file);
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, accessed: " << accessed << endl);
+#endif
 
-        //ff_read_descriptors(*dds, accessed,true);
+        ff_read_descriptors(*dds, accessed,false);
 
         BESDEBUG("ff", "FFRequestHandler::ff_build_dds, reading attributes" << endl);
 
@@ -280,15 +283,24 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
-#if 0
         dds->filename(accessed);
+#if 0
         ff_read_descriptors(*dds, accessed,true);
         Ancillary::read_ancillary_dds(*dds, accessed);
 #endif
 //#if 0
+        string db_file = get_format_file_name(accessed);
+        cerr<<"db_file is "<<db_file <<endl;
+
         //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
         //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/test0.fmt";
-        string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+        ////string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
+        //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
+        //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/test5.fmt";
+        //string db_file ="";
+
         FFTypeFactory FreeFormFactory(accessed,db_file);
         dds->set_factory(&FreeFormFactory);
 

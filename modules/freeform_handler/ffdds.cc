@@ -104,6 +104,7 @@ void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
     // Regex support
     if (FFRequestHandler::get_Regex_format_support()) {
         iff = get_Regex_format_file(filename);
+ 
         if (!iff.empty())
             SetUps->input_format_file = const_cast<char*>(iff.c_str());
     }
@@ -149,6 +150,9 @@ void ff_read_descriptors(DDS &dds_table, const string &filename,bool use_fc)
             throw Error(msg);
         }
 
+            PROCESS_INFO_LIST pinfo_list_o = dll_first(pinfo_list);
+            PROCESS_INFO_PTR pinfo_o = ((PROCESS_INFO_PTR) (pinfo_list_o)->data.u.pi);
+            string fmt_name = PINFO_ORIGIN(pinfo_o);
       if(false == use_fc) {
         bool newseq = true;
         bool is_array = true;

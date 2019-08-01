@@ -210,12 +210,12 @@ printf("o_format is %s\n",o_format);
 printf("bize is %d\n",bsize);
             throw BESError(message, BES_SYNTAX_USER_ERROR, __FILE__, __LINE__);
         }
-//#if 0
+#if 0
 printf("dataset is %s\n",dataset);
 printf("if_file is %s\n",if_file);
 printf("o_format is %s\n",o_format);
 printf("bize is %d\n",bsize);
-//#endif
+#endif
 
         ff_destroy_bufsize(newform_log);
         ff_destroy_std_args(std_args);
@@ -786,4 +786,70 @@ string get_Regex_format_file(const string & filename)
     }
     BESDEBUG("ff", "get_Regex_format_file() - returning format filename: '"<< retVal << "'" << endl);
     return retVal;
+}
+
+// Obtain the format file path, mostly borrowed from ffdds.cc
+string get_format_file_name(const string & filename) {
+
+    FF_STD_ARGS_PTR SetUps = NULL;
+    SetUps = ff_create_std_args();
+    if (!SetUps)
+        throw Error("Insufficient memory");
+
+    // Set the structure values to create the FreeForm DB
+    SetUps->user.is_stdin_redirected = 0;
+
+    SetUps->input_file = const_cast<char*>(filename.c_str());
+
+    SetUps->output_file = NULL;
+
+    DATA_BIN_PTR dbin = NULL;
+    char Msgt[Msgt_size];
+    int error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+        if (dbin)
+            db_destroy(dbin);
+        ff_destroy_std_args(SetUps);
+        string msg = (string) Msgt + " FreeForm error code: ";
+        append_long_to_string((long) error, 10, msg);
+        throw Error(msg);
+    }
+
+    ff_destroy_std_args(SetUps);
+
+    PROCESS_INFO_LIST pinfo_list = NULL;
+
+    string fmt_name;
+
+    try {
+
+        error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
+        if (error) {
+            string msg = "Could not get process info for the input file. FreeForm error code: ";
+            append_long_to_string((long) error, 10, msg);
+            throw Error(msg);
+        }
+
+        pinfo_list = dll_first(pinfo_list);
+        PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
+        fmt_name = PINFO_ORIGIN(pinfo);
+     }
+     catch (...) {
+        // Because these are added to the DDS using the nocopy methods,
+        // they should only be deleted when an excpetion is thrown
+
+        if (dbin)
+            db_destroy(dbin);
+        if (pinfo_list)
+            ff_destroy_process_info_list(pinfo_list);
+        throw;
+    }
+
+    if (dbin)
+        db_destroy(dbin);
+    if (pinfo_list)
+        ff_destroy_process_info_list(pinfo_list);
+
+    return fmt_name;
+
 }

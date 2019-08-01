@@ -88,6 +88,8 @@ dods_float64 get_float_value(BaseType *var) throw(InternalErr);
 
 string get_Regex_format_file(const string &filename);
 
+string get_format_file_name(const string & filename);
+
 #endif // _util_ff_h_
 
 
