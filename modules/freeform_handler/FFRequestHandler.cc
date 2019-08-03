@@ -65,6 +65,8 @@
 #include "util_ff.h"
 #include "FreeFormCPP.h"
 
+#include "GlobalMetadataStore.h"
+
 //#include "FFTypeFactory.h"
 
 using namespace libdap;
@@ -304,6 +306,11 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         FFTypeFactory FreeFormFactory(accessed,db_file);
         dds->set_factory(&FreeFormFactory);
 
+	bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
+
+	mds->parse_dds_from_mds(dds,accessed);
+
+#if 0
         string dds_file_name = "ff_test.dds";
 
         FILE* dds_file = fopen(dds_file_name.c_str(),"r");
@@ -313,6 +320,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         }
         dds->parse(dds_file);
         fclose(dds_file);
+#endif
  
         Ancillary::read_ancillary_dds(*dds, accessed);
 //#endif
