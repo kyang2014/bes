@@ -221,6 +221,8 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
+        //string rel_name = dhi.container->get_relative_name();
+        //cerr<<"relative name is "<<rel_name <<endl;
         //dds->filename(accessed);
 #if 0
         FFTypeFactory FreeFormFactory(accessed,"");
@@ -291,8 +293,9 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         Ancillary::read_ancillary_dds(*dds, accessed);
 #endif
 //#if 0
+        string rel_file_path = dhi.container->get_relative_name();
         string db_file = get_format_file_name(accessed);
-        cerr<<"db_file is "<<db_file <<endl;
+        //cerr<<"db_file is "<<db_file <<endl;
 
         //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
         //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/test0.fmt";
@@ -308,19 +311,8 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
 	bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
 
-	mds->parse_dds_from_mds(dds,accessed);
+	mds->parse_dds_from_mds(dds,rel_file_path);
 
-#if 0
-        string dds_file_name = "ff_test.dds";
-
-        FILE* dds_file = fopen(dds_file_name.c_str(),"r");
-        if(dds_file == NULL){
-            cerr<<"cannot open dds"<<endl;
-            throw BESInternalError("Cannot open file from MDS error", __FILE__, __LINE__);
-        }
-        dds->parse(dds_file);
-        fclose(dds_file);
-#endif
  
         Ancillary::read_ancillary_dds(*dds, accessed);
 //#endif

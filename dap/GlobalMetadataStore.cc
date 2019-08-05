@@ -1260,7 +1260,7 @@ void
 GlobalMetadataStore::parse_dds_from_mds(libdap::DDS* dds, const std::string &name) {
     string suffix = "dds_r";
     string item_name = get_cache_file_name(get_hash(name + suffix), false);
-cerr<<"item_name is "<<item_name <<endl;
+//cerr<<"item_name is "<<item_name <<endl;
     int fd; // value-result parameter;
     if (get_read_lock(item_name, fd)) {
         VERBOSE("Metadata store: Cache hit: read " << " response for '" << name << "'." << endl);
