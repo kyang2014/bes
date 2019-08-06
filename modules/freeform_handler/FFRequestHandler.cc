@@ -308,30 +308,31 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 #endif
   
         if(valid_mds) {
-        bes::GlobalMetadataStore::MDSReadLock mds_dds_lock = mds->is_dds_available(rel_file_path);
+            bes::GlobalMetadataStore::MDSReadLock mds_dds_lock = mds->is_dds_available(rel_file_path);
 
-        if(mds_dds_lock()) {
-            BESDEBUG("ff", "Using MDS to generate DDS in the data response for file " << accessed << endl);
-            string db_file = get_format_file_name(accessed);
-        //cerr<<"db_file is "<<db_file <<endl;
+            if(mds_dds_lock()) {
+                BESDEBUG("ff", "Using MDS to generate DDS in the data response for file " << accessed << endl);
+                string db_file = get_format_file_name(accessed);
 
-        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
-        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/test0.fmt";
-        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
-        ////string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
-        //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
-        //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
-        //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/test5.fmt";
-        //string db_file ="";
+                //cerr<<"db_file is "<<db_file <<endl;
 
-            FFTypeFactory FreeFormFactory(accessed,db_file);
-            dds->set_factory(&FreeFormFactory);
-	        mds->parse_dds_from_mds(dds,rel_file_path);
-        }
-        else {
-            ff_read_descriptors(*dds, accessed,true);
-        }
-        mds_dds_lock.clearLock();
+                //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
+                //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/test0.fmt";
+                //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+                ////string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/avhrr.fmt";
+                //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
+                //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data3.fmt";
+                //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/test5.fmt";
+                //string db_file ="";
+
+                FFTypeFactory FreeFormFactory(accessed,db_file);
+                dds->set_factory(&FreeFormFactory);
+	            mds->parse_dds_from_mds(dds,rel_file_path);
+            }
+            else {
+                ff_read_descriptors(*dds, accessed,true);
+            }
+            mds_dds_lock.clearLock();
         }
         else 
         {
@@ -343,15 +344,15 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         BESDASResponse bdas(das);
         bdas.set_container(dhi.container->get_symbolic_name());
         if(valid_mds) {
-        bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
-        if(mds_das_lock()) {
-            BESDEBUG("ff", "Using MDS to generate DAS in the data response for file " << accessed << endl);
-            mds->parse_das_from_mds(das,rel_file_path);
-        }
-        else {
-           ff_get_attributes(*das, accessed);
-        }
-        mds_das_lock.clearLock();
+            bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
+            if(mds_das_lock()) {
+                BESDEBUG("ff", "Using MDS to generate DAS in the data response for file " << accessed << endl);
+                mds->parse_das_from_mds(das,rel_file_path);
+            }
+            else {
+               ff_get_attributes(*das, accessed);
+            }
+            mds_das_lock.clearLock();
         }
         else {
            ff_get_attributes(*das, accessed);
