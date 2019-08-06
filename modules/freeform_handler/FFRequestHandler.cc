@@ -294,7 +294,25 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 #endif
 //#if 0
         string rel_file_path = dhi.container->get_relative_name();
-        string db_file = get_format_file_name(accessed);
+	    bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
+        bool valid_mds = true;
+        if(!mds) 
+            valid_mds = false;
+        else if(false == mds->cache_enabled()) 
+            valid_mds = false;
+#if 0        
+        if(valid_mds == true)
+            cerr<<"mds is turned on"<<endl;
+        else
+            cerr<<"mds is turned off "<<endl;
+#endif
+  
+        if(valid_mds) {
+        bes::GlobalMetadataStore::MDSReadLock mds_dds_lock = mds->is_dds_available(rel_file_path);
+
+        if(mds_dds_lock()) {
+            BESDEBUG("ff", "Using MDS to generate DDS in the data response for file " << accessed << endl);
+            string db_file = get_format_file_name(accessed);
         //cerr<<"db_file is "<<db_file <<endl;
 
         //string db_file = "/home/kyang/opendap/bes-mds/bes/modules/freeform_handler/data/dbl_data.fmt";
@@ -306,23 +324,41 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         //string db_file = "/opt/kent/opendap/bes-mds/bes/modules/freeform_handler/data/test5.fmt";
         //string db_file ="";
 
-        FFTypeFactory FreeFormFactory(accessed,db_file);
-        dds->set_factory(&FreeFormFactory);
-
-	bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
-
-	mds->parse_dds_from_mds(dds,rel_file_path);
-
- 
+            FFTypeFactory FreeFormFactory(accessed,db_file);
+            dds->set_factory(&FreeFormFactory);
+	        mds->parse_dds_from_mds(dds,rel_file_path);
+        }
+        else {
+            ff_read_descriptors(*dds, accessed,true);
+        }
+        mds_dds_lock.clearLock();
+        }
+        else 
+        {
+            ff_read_descriptors(*dds, accessed,true);
+        }
         Ancillary::read_ancillary_dds(*dds, accessed);
-//#endif
 
         DAS *das = new DAS;
         BESDASResponse bdas(das);
         bdas.set_container(dhi.container->get_symbolic_name());
-        ff_get_attributes(*das, accessed);
-        Ancillary::read_ancillary_das(*das, accessed);
+        if(valid_mds) {
+        bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
+        if(mds_das_lock()) {
+            BESDEBUG("ff", "Using MDS to generate DAS in the data response for file " << accessed << endl);
+            mds->parse_das_from_mds(das,rel_file_path);
+        }
+        else {
+           ff_get_attributes(*das, accessed);
+        }
+        mds_das_lock.clearLock();
+        }
+        else {
+           ff_get_attributes(*das, accessed);
+        }
+ 
 
+        Ancillary::read_ancillary_das(*das, accessed);
         dds->transfer_attributes(das);
 
         bdds->set_constraint(dhi);
