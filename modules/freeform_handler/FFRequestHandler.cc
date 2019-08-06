@@ -340,6 +340,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         }
         Ancillary::read_ancillary_dds(*dds, accessed);
 
+#if 0
         DAS *das = new DAS;
         BESDASResponse bdas(das);
         bdas.set_container(dhi.container->get_symbolic_name());
@@ -361,7 +362,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
         Ancillary::read_ancillary_das(*das, accessed);
         dds->transfer_attributes(das);
-
+#endif
         bdds->set_constraint(dhi);
 
         bdds->clear_container();
