@@ -285,6 +285,13 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
+
+        string t_constraint = dhi.container->get_constraint();
+        //cerr<<"t_constraint is "<<t_constraint <<endl;
+        ConstraintEvaluator & ce = bdds->get_ce();
+        //BESDEBUG("dap", "ConstraintEvaluator " << ce << endl);
+        
+
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
