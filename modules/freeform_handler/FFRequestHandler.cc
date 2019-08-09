@@ -290,7 +290,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         //cerr<<"t_constraint is "<<t_constraint <<endl;
         ConstraintEvaluator & ce = bdds->get_ce();
         //BESDEBUG("dap", "ConstraintEvaluator " << ce << endl);
-        
+        // CHECK if using the server-side function. If not, skipping the das build.
 
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
@@ -495,5 +495,61 @@ bool FFRequestHandler::ff_build_version(BESDataHandlerInterface & dhi)
 
     return true;
 }
+
+#if 0
+void BESDapResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
+{
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - source expression: " << expr << endl);
+
+    string ce;
+    if (!expr.empty())
+        ce = expr;
+    else
+        ce = d_dap2ce;
+
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - KENT ce is : " << ce << endl);
+    string btp_function_ce = "";
+    string::size_type pos = 0;
+
+    // This hack assumes that the functions are listed first. Look for the first
+    // open paren and the last closing paren to accommodate nested function calls
+    string::size_type first_paren = ce.find("(", pos);
+    string::size_type closing_paren = string::npos;
+    if (first_paren != string::npos) closing_paren = find_closing_paren(ce, first_paren); //ce.find(")", pos);
+
+    while (first_paren != string::npos && closing_paren != string::npos) {
+        // Maybe a BTP function; get the name of the potential function
+        string name = ce.substr(pos, first_paren - pos);
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - KENT BTP name is : " << name << endl);
+
+
+        // is this a BTP function
+        btp_func f;
+        if (eval.find_function(name, &f)) {
+            // Found a BTP function
+            if (!btp_function_ce.empty()) btp_function_ce += ",";
+            btp_function_ce += ce.substr(pos, closing_paren + 1 - pos);
+            ce.erase(pos, closing_paren + 1 - pos);
+            if (ce[pos] == ',') ce.erase(pos, 1);
+        }
+        else {
+            pos = closing_paren + 1;
+            // exception?
+            if (pos < ce.length() && ce.at(pos) == ',') ++pos;
+        }
+
+        first_paren = ce.find("(", pos);
+        closing_paren = ce.find(")", pos);
+    }
+
+    d_dap2ce = ce;
+    d_btp_func_ce = btp_function_ce;
+
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - Modified constraint: " << d_dap2ce << endl);
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - BTP Function part: " << btp_function_ce << endl);
+    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - END" << endl);
+}
+#endif
+
 
 
