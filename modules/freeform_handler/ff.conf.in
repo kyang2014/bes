@@ -35,5 +35,5 @@ BES.module.ff=@bes_modules_dir@/libff_module.so
 # % besregtest type # "nc:.*\.nc$;nc:.*\.nc\.gz$;" fnoc1.nc
 # expression ".*\.(nc|NC)(\.gz|\.bz2|\.Z)?$" matches exactly, type = nc
 
-BES.Catalog.catalog.TypeMatch+=ff:.*\.dat(\.bz2|\.gz|\.Z)?$;
+BES.Catalog.catalog.TypeMatch+=ff:.*\.dat(\.bz2|\.gz|\.Z)?$;ff:.*\.bin(\.bz2|\.gz|\.Z)?$;
 

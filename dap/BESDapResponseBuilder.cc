@@ -421,7 +421,6 @@ void BESDapResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &ex
     else
         ce = d_dap2ce;
 
-    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - KENT ce is : " << ce << endl);
     string btp_function_ce = "";
     string::size_type pos = 0;
 
@@ -434,7 +433,6 @@ void BESDapResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &ex
     while (first_paren != string::npos && closing_paren != string::npos) {
         // Maybe a BTP function; get the name of the potential function
         string name = ce.substr(pos, first_paren - pos);
-    BESDEBUG("dap", "BESDapResponseBuilder::split_ce() - KENT BTP name is : " << name << endl);
 
 
         // is this a BTP function

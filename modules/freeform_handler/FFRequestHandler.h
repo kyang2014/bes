@@ -30,6 +30,12 @@
 
 #include "BESRequestHandler.h"
 
+namespace libdap {
+
+    class ConstraintEvaluator;
+
+}
+
 class FFRequestHandler : public BESRequestHandler {
 private:
     static bool d_RSS_format_support;
@@ -56,6 +62,8 @@ public:
 
     static bool get_Regex_format_support() { return d_Regex_format_support; }
     static map<string,string> get_fmt_regex_map() { return d_fmt_regex_map; }
+
+    static bool is_function_used(libdap::ConstraintEvaluator &eval, const string & t_constraint);
 
 };
 

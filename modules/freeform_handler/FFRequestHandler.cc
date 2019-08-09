@@ -286,12 +286,6 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
 
-        string t_constraint = dhi.container->get_constraint();
-        //cerr<<"t_constraint is "<<t_constraint <<endl;
-        ConstraintEvaluator & ce = bdds->get_ce();
-        //BESDEBUG("dap", "ConstraintEvaluator " << ce << endl);
-        // CHECK if using the server-side function. If not, skipping the das build.
-
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
@@ -347,29 +341,38 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         }
         Ancillary::read_ancillary_dds(*dds, accessed);
 
-#if 0
-        DAS *das = new DAS;
-        BESDASResponse bdas(das);
-        bdas.set_container(dhi.container->get_symbolic_name());
-        if(valid_mds) {
-            bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
-            if(mds_das_lock()) {
-                BESDEBUG("ff", "Using MDS to generate DAS in the data response for file " << accessed << endl);
-                mds->parse_das_from_mds(das,rel_file_path);
+        string t_constraint = dhi.container->get_constraint();
+
+        ConstraintEvaluator & eval = bdds->get_ce();
+ 
+        bool function_in_constraint = is_function_used(eval,t_constraint);
+        
+        if(true == function_in_constraint) {
+            cerr<<"function in constraint"<<endl;
+            BESDEBUG("ff", " Server-side functions are used in the expression constraint, DAS is used. " << accessed << endl);
+
+            DAS *das = new DAS;
+            BESDASResponse bdas(das);
+            bdas.set_container(dhi.container->get_symbolic_name());
+            if(valid_mds) {
+                bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
+                if(mds_das_lock()) {
+                    BESDEBUG("ff", "Using MDS to generate DAS in the data response for file " << accessed << endl);
+                    mds->parse_das_from_mds(das,rel_file_path);
+                }
+                else {
+                   ff_get_attributes(*das, accessed);
+                }
+                mds_das_lock.clearLock();
             }
             else {
                ff_get_attributes(*das, accessed);
             }
-            mds_das_lock.clearLock();
-        }
-        else {
-           ff_get_attributes(*das, accessed);
-        }
  
 
-        Ancillary::read_ancillary_das(*das, accessed);
-        dds->transfer_attributes(das);
-#endif
+            Ancillary::read_ancillary_das(*das, accessed);
+            dds->transfer_attributes(das);
+        }
         bdds->set_constraint(dhi);
 
         bdds->clear_container();
@@ -496,6 +499,79 @@ bool FFRequestHandler::ff_build_version(BESDataHandlerInterface & dhi)
     return true;
 }
 
+/**
+ * Starting at pos, look for the next closing (right) parenthesis. This code
+ * will count opening (left) parens and find the closing paren that maches
+ * the first opening paren found. Examples: "0123)56" --> 4; "0123(5)" --> 6;
+ * "01(3(5)7)9" --> 8.
+ *
+ * This function is intended to help split up a constraint expression so that
+ * the server functions can be processed separately from the projection and
+ * selection parts of the CE.
+ *
+ * @param ce The constraint to look in
+ * @param pos Start looking at this position; zero-based indexing
+ * @return The position in the string where the closing paren was found
+ */
+static string::size_type find_closing_paren(const string &ce, string::size_type pos)
+{
+    // Iterate over the string finding all ( or ) characters until the matching ) is found.
+    // For each ( found, increment count. When a ) is found and count is zero, it is the
+    // matching closing paren, otherwise, decrement count and keep looking.
+    int count = 1;
+    do {
+        pos = ce.find_first_of("()", pos + 1);
+        if (pos == string::npos)
+            throw Error(malformed_expr, "Expected to find a matching closing parenthesis in " + ce);
+
+        if (ce[pos] == '(')
+            ++count;
+        else
+            --count;	// must be ')'
+
+    } while (count > 0);
+
+    return pos;
+}
+
+
+
+bool FFRequestHandler::is_function_used(ConstraintEvaluator &eval, const string &t_constraint) {
+
+    bool ret_value = false;
+
+    if(t_constraint!="") {
+        string::size_type pos = 0;
+        string::size_type first_paren = t_constraint.find("(", pos);
+        string::size_type closing_paren = string::npos;
+        if (first_paren != string::npos) 
+            closing_paren = find_closing_paren(t_constraint, first_paren); //ce.find(")", pos);
+
+        while (first_paren != string::npos && closing_paren != string::npos) {
+
+            // Maybe a BTP function; get the name of the potential function
+            string btp_name = t_constraint.substr(pos, first_paren - pos);
+            BESDEBUG("ff", " KENT BTP name is : " << btp_name << endl);
+
+            // is this a BTP function
+            btp_func f;
+            if (eval.find_function(btp_name, &f)) {
+                ret_value = true;
+                break;
+            }
+            else {
+                pos = closing_paren + 1;
+                // exception?
+                if (pos < t_constraint.length() && t_constraint.at(pos) == ',') ++pos;
+            }
+
+            first_paren = t_constraint.find("(", pos);
+            closing_paren = t_constraint.find(")", pos);
+        }        
+    }
+
+    return ret_value;
+}
 #if 0
 void BESDapResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
 {
