@@ -1,5 +1,5 @@
 
-// -*- mode: c++; c-basic-offset:4 -*-
+// -*- mode: c++; c-basic-oncset:4 -*-
 
 // Copyright (c) 2005 OPeNDAP, Inc.
 // Author: Kent Yang <myang6@hdfgroup.org> James Gallagher <jgallagher@opendap.org>
@@ -20,34 +20,34 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef ff_factory_h
-#define ff_factory_h
+#ifndef nc_factory_h
+#define nc_factory_h
 
 #include <string>
 
 #include "BaseTypeFactory.h"
 
-class FFByte;
-class FFInt16;
-class FFUInt16;
-class FFInt32;
-class FFUInt32;
-class FFFloat32;
-class FFFloat64;
-class FFStr;
-class FFUrl;
-class FFArray;
-class FFStructure;
-class FFSequence;
-class FFGrid;
+class NCByte;
+class NCInt16;
+class NCUInt16;
+class NCInt32;
+class NCUInt32;
+class NCFloat32;
+class NCFloat64;
+class NCStr;
+class NCUrl;
+class NCArray;
+class NCStructure;
+class NCSequence;
+class NCGrid;
 
-/** A factory for the FFByte, ..., FFGrid types.
+/** A factory for the NCByte, ..., NCGrid types.
     @author Kent Yang, James Gallagher */
-class FFTypeFactory : public libdap::BaseTypeFactory {
+class NCTypeFactory : public libdap::BaseTypeFactory {
 public:
-    FFTypeFactory() {} 
-    FFTypeFactory(const string & d_name,const string &d_iff):fd_name(d_name),fd_iff(d_iff),fbt(NULL) { }
-    virtual ~FFTypeFactory() {}
+    NCTypeFactory() {} 
+    NCTypeFactory(const string & d_name):fd_name(d_name),fbt(NULL) { }
+    virtual ~NCTypeFactory() {}
 
     virtual libdap::BaseType *NewVariable(libdap::Type t, const std::string &name) const;
     virtual libdap::Byte *NewByte(const std::string &n = "") const;
@@ -66,11 +66,9 @@ public:
     virtual libdap::Sequence *NewSequence(const std::string &n = "") const;
     virtual libdap::Grid *NewGrid(const std::string &n = "") const;
     //virtual libdap::D4Sequence *NewD4Sequence(const std::string &n="") const;
-    void set_fd_iff(const string & iff) {fd_iff = iff;}
 private:
     string fd_name;
-    string fd_iff;
     BaseType* fbt;
 };
 
-#endif // ff_factory_h
+#endif // nc_factory_h

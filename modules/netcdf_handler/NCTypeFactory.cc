@@ -28,29 +28,30 @@
 #include <BESError.h>
 #include <BESDebug.h>
 
-#include "FFByte.h"
-#include "FFInt16.h"
-#include "FFUInt16.h"
-#include "FFInt32.h"
-#include "FFUInt32.h"
-#include "FFFloat32.h"
-#include "FFFloat64.h"
-#include "FFStr.h"
-#include "FFUrl.h"
-#include "FFArray.h"
-#include "FFStructure.h"
-#include "FFSequence.h"
-#include "FFGrid.h"
+#include "NCByte.h"
+#include "NCInt16.h"
+#include "NCUInt16.h"
+#include "NCInt32.h"
+#include "NCUInt32.h"
+#include "NCFloat32.h"
+#include "NCFloat64.h"
+#include "NCStr.h"
+#include "NCUrl.h"
+#include "NCArray.h"
+#include "NCStructure.h"
+#include "NCSequence.h"
+#include "NCGrid.h"
 
 #include "BaseTypeFactory.h"
-#include "FFTypeFactory.h"
+#include "NCTypeFactory.h"
 
 #include "debug.h"
+#include <netcdf.h>
 
 using namespace libdap;
 using namespace std;
 
-BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
+BaseType *NCTypeFactory::NewVariable(Type t, const string &name) const
 {
 	switch (t) {
 	case dods_byte_c:
@@ -104,81 +105,81 @@ BaseType *FFTypeFactory::NewVariable(Type t, const string &name) const
 
 
 Byte *
-FFTypeFactory::NewByte(const string &n ) const 
+NCTypeFactory::NewByte(const string &n ) const 
 { 
-    return new FFByte(n,fd_name);
+    return new NCByte(n,fd_name);
 }
 
 Int16 *
-FFTypeFactory::NewInt16(const string &n ) const 
+NCTypeFactory::NewInt16(const string &n ) const 
 { 
-    return new FFInt16(n,fd_name); 
+    return new NCInt16(n,fd_name); 
 }
 
 UInt16 *
-FFTypeFactory::NewUInt16(const string &n ) const 
+NCTypeFactory::NewUInt16(const string &n ) const 
 { 
-    return new FFUInt16(n,fd_name);
+    return new NCUInt16(n,fd_name);
 }
 
 Int32 *
-FFTypeFactory::NewInt32(const string &n ) const 
+NCTypeFactory::NewInt32(const string &n ) const 
 { 
-    DBG(cerr << "Inside FFTypeFactory::NewInt32" << endl);
-    return new FFInt32(n,fd_name);
+    DBG(cerr << "Inside NCTypeFactory::NewInt32" << endl);
+    return new NCInt32(n,fd_name);
 }
 
 UInt32 *
-FFTypeFactory::NewUInt32(const string &n ) const 
+NCTypeFactory::NewUInt32(const string &n ) const 
 { 
-    return new FFUInt32(n,fd_name);
+    return new NCUInt32(n,fd_name);
 }
 
 Float32 *
-FFTypeFactory::NewFloat32(const string &n ) const 
+NCTypeFactory::NewFloat32(const string &n ) const 
 { 
-    return new FFFloat32(n,fd_name);
+    return new NCFloat32(n,fd_name);
 }
 
 Float64 *
-FFTypeFactory::NewFloat64(const string &n ) const 
+NCTypeFactory::NewFloat64(const string &n ) const 
 { 
-    return new FFFloat64(n,fd_name);
+    return new NCFloat64(n,fd_name);
 }
 
 Str *
-FFTypeFactory::NewStr(const string &n ) const 
+NCTypeFactory::NewStr(const string &n ) const 
 { 
-    return new FFStr(n,fd_name);
+    return new NCStr(n,fd_name);
 }
 
 Url *
-FFTypeFactory::NewUrl(const string &n ) const 
+NCTypeFactory::NewUrl(const string &n ) const 
 { 
-    return new FFUrl(n,fd_name);
+    return new NCUrl(n,fd_name);
 }
 
 Array *
-FFTypeFactory::NewArray(const string &n , BaseType *v) const 
+NCTypeFactory::NewArray(const string &n , BaseType *v) const 
 { 
-    return new FFArray(n,fd_name,v,fd_iff);
+    return new NCArray(n,fd_name,v);
 }
 
 Structure *
-FFTypeFactory::NewStructure(const string &n ) const 
+NCTypeFactory::NewStructure(const string &n ) const 
 { 
-    return new FFStructure(n,fd_name);
+    return new NCStructure(n,fd_name);
 }
 
 Sequence *
-FFTypeFactory::NewSequence(const string &n ) const 
+NCTypeFactory::NewSequence(const string &n ) const 
 {
-    DBG(cerr << "Inside FFTypeFactory::NewSequence" << endl);
-    return new FFSequence(n,fd_name,fd_iff);
+    DBG(cerr << "Inside NCTypeFactory::NewSequence" << endl);
+    return new NCSequence(n,fd_name);
 }
 
 Grid *
-FFTypeFactory::NewGrid(const string &n ) const 
+NCTypeFactory::NewGrid(const string &n ) const 
 { 
-    return new FFGrid(n,fd_name);
+    return new NCGrid(n,fd_name);
 }

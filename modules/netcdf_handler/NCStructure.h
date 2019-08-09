@@ -43,6 +43,7 @@
 #include <vector>
 
 #include <Structure.h>
+#include <netcdf.h>
 
 using namespace libdap ;
 

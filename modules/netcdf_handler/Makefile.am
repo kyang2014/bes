@@ -31,11 +31,11 @@ libnc_module_la_LIBADD = $(LIBADD)
 NCTYPE_SRC = ncdas.cc ncdds.cc nc_util.cc \
 	NCArray.cc NCByte.cc NCFloat64.cc NCGrid.cc NCUInt32.cc		\
 	NCInt32.cc NCSequence.cc NCStr.cc NCStructure.cc NCUrl.cc	\
-	NCUInt16.cc NCInt16.cc NCFloat32.cc
+	NCUInt16.cc NCInt16.cc NCFloat32.cc NCTypeFactory.cc
 
 NCTYPE_HDR = NCFloat64.h NCArray.h NCGrid.h NCSequence.h NCUInt16.h 	\
 	NCByte.h NCInt16.h NCStr.h NCUInt32.h NCFloat32.h NCInt32.h	\
-	NCStructure.h NCUrl.h nc_util.h config_nc.h
+	NCStructure.h NCUrl.h nc_util.h config_nc.h NCTypeFactory.h
 
 SERVER_SRC = NCRequestHandler.cc NCModule.cc
 
