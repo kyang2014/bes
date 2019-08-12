@@ -73,6 +73,15 @@ BES.DefaultResponseMethod=POST
 #-----------------------------------------------------------------------#
 NC.ShowSharedDimensions=false
 
-NC.CacheEntries = 100
+NC.CacheEntries = 0
 # NC.CachePurgeLevel = 0.2
+
+# MDS configuration - for the tests the read the DDS and DAS from the MDS,
+# use the saved/baseline MDS in data/mds_for_tests
+
+DAP.GlobalMetadataStore.path = @abs_top_builddir@/modules/netcdf_handler/tests/mds_for_tests
+DAP.GlobalMetadataStore.prefix = mds_for_tests_
+DAP.GlobalMetadataStore.size = 0
+
+DAP.GlobalMetadataStore.ledger = @abs_top_builddir@/modules/netcdf_handler/tests/mds_for_tests_ledger.txt
 
