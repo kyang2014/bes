@@ -33,6 +33,7 @@ class ObjMemCache;  // in bes/dap
 
 namespace libdap {
 class DDS;
+class ConstraintEvaluator;
 }
 
 class NCRequestHandler: public BESRequestHandler {
@@ -54,6 +55,9 @@ private:
     static ObjMemCache *dmr_cache;
 
     static void get_dds_with_attributes(const std::string& dataset_name, const std::string& container_name, libdap::DDS* dds);
+    static void get_dds_with_attributes_data(const std::string& dataset_name, const std::string& container_name, const std::string& rel_filepath,const std::string &t_constraint, const libdap::ConstraintEvaluator &eval, libdap::DDS* dds);
+    static bool is_function_used(const libdap::ConstraintEvaluator &eval, const string & t_constraint);
+
 
 public:
 	NCRequestHandler(const string &name);

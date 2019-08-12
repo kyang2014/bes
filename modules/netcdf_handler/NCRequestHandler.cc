@@ -60,6 +60,9 @@
 #include <Ancillary.h>
 
 #include "NCRequestHandler.h"
+#include "NCTypeFactory.h"
+
+#include "GlobalMetadataStore.h"
 
 #define NC_NAME "nc"
 
@@ -358,6 +361,108 @@ void NCRequestHandler::get_dds_with_attributes(const string& dataset_name, const
     }
 }
 
+/**
+ * @brief Using the empty DDS object, build a DDS
+ * @param dataset_name
+ * @param container_name
+ * @param dds
+ */
+void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, const string& container_name, const string& rel_file_path, const string& t_constraint, const ConstraintEvaluator &eval, DDS* dds)
+{
+    // Look in memory cache if it's initialized
+    DDS* cached_dds_ptr = 0;
+    if (dds_cache && (cached_dds_ptr = static_cast<DDS*>(dds_cache->get(dataset_name)))) {
+        // copy the cached DDS into the BES response object. Assume that any cached DDS
+        // includes the DAS information.
+        BESDEBUG(NC_NAME, "DDS Cached hit for : " << dataset_name << endl);
+        *dds = *cached_dds_ptr; // Copy the referenced object
+    }
+    else {
+        if (!container_name.empty()) dds->container_name(container_name);
+        dds->filename(dataset_name);
+cerr<<"dataset_name is "<<dataset_name<<endl;
+
+        bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
+        bool valid_mds = true;
+        if(!mds)
+            valid_mds = false;
+        else if(false == mds->cache_enabled())
+            valid_mds = false;
+
+       if(valid_mds) {
+            bes::GlobalMetadataStore::MDSReadLock mds_dds_lock = mds->is_dds_available(rel_file_path);
+
+            if(mds_dds_lock()) {
+                BESDEBUG("nc", "Using MDS to generate DDS in the data response for file " <<dataset_name << endl);
+
+                NCTypeFactory NCTypeFactory(dataset_name);
+                dds->set_factory(&NCTypeFactory);
+	        mds->parse_dds_from_mds(dds,rel_file_path);
+            }
+            else {
+                nc_read_dataset_variables(*dds, dataset_name);
+            }
+            mds_dds_lock.clearLock();
+        }
+        else 
+        {
+            nc_read_dataset_variables(*dds, dataset_name);
+        }
+
+        bool function_in_constraint = is_function_used(eval,t_constraint);
+        
+        if(true == function_in_constraint) {
+            cerr<<"function in constraint"<<endl;
+            BESDEBUG("nc", " Server-side functions are used in the expression constraint, DAS is used. " << dataset_name << endl);
+            DAS* das = 0;
+            if (das_cache && (das = static_cast<DAS*>(das_cache->get(dataset_name)))) {
+                BESDEBUG(NC_NAME, "DAS Cached hit for : " << dataset_name << endl);
+                dds->transfer_attributes(das); // no need to cop the cached DAS
+            }
+            else {
+                das = new DAS;
+                // This looks at the 'use explicit containers' prop, and if true
+                // sets the current container for the DAS.
+                if (!container_name.empty()) das->container_name(container_name);
+
+                if(valid_mds) {
+                    bes::GlobalMetadataStore::MDSReadLock mds_das_lock = mds->is_das_available(rel_file_path);
+                    if(mds_das_lock()) {
+                        BESDEBUG("nc", "Using MDS to generate DAS in the data response for file " << dataset_name << endl);
+                        mds->parse_das_from_mds(das,rel_file_path);
+                    }
+                    else {
+                        nc_read_dataset_attributes(*das, dataset_name);
+                    }
+                    mds_das_lock.clearLock();
+                }
+                else {
+                    nc_read_dataset_attributes(*das, dataset_name);
+                }
+
+                Ancillary::read_ancillary_das(*das, dataset_name);
+
+                dds->transfer_attributes(das);
+
+                // Only free the DAS if it's not added to the cache
+                if (das_cache) {
+                    // add a copy
+                    BESDEBUG(NC_NAME, "DAS added to the cache for : " << dataset_name << endl);
+                    das_cache->add(das, dataset_name);
+                }
+                else {
+                    delete das;
+                }
+            }
+        }
+
+        if (dds_cache) {
+            // add a copy
+            BESDEBUG(NC_NAME, "DDS added to the cache for : " << dataset_name << endl);
+            dds_cache->add(new DDS(*dds), dataset_name);
+        }
+    }
+}
 bool NCRequestHandler::nc_build_dds(BESDataHandlerInterface & dhi)
 {
 
@@ -447,8 +552,12 @@ bool NCRequestHandler::nc_build_data(BESDataHandlerInterface & dhi)
         string container_name = bdds->get_explicit_containers() ? dhi.container->get_symbolic_name(): "";
         DDS *dds = bdds->get_dds();
 
+        string rel_filepath = dhi.container->get_relative_name();
+        string t_constraint = dhi.container->get_constraint();
+
+        ConstraintEvaluator & eval = bdds->get_ce();
         // Build a DDS in the empty DDS object
-        get_dds_with_attributes(dhi.container->access(), container_name, dds);
+        get_dds_with_attributes_data(dhi.container->access(), container_name, rel_filepath,t_constraint, eval,dds);
 
         bdds->set_constraint(dhi);
         bdds->clear_container();
@@ -623,4 +732,77 @@ bool NCRequestHandler::nc_build_version(BESDataHandlerInterface & dhi)
     info->add_module(MODULE_NAME, MODULE_VERSION);
 
     return true;
+}
+/**
+ * Starting at pos, look for the next closing (right) parenthesis. This code
+ * will count opening (left) parens and find the closing paren that maches
+ * the first opening paren found. Examples: "0123)56" --> 4; "0123(5)" --> 6;
+ * "01(3(5)7)9" --> 8.
+ *
+ * This function is intended to help split up a constraint expression so that
+ * the server functions can be processed separately from the projection and
+ * selection parts of the CE.
+ *
+ * @param ce The constraint to look in
+ * @param pos Start looking at this position; zero-based indexing
+ * @return The position in the string where the closing paren was found
+ */
+static string::size_type find_closing_paren(const string &ce, string::size_type pos)
+{
+    // Iterate over the string finding all ( or ) characters until the matching ) is found.
+    // For each ( found, increment count. When a ) is found and count is zero, it is the
+    // matching closing paren, otherwise, decrement count and keep looking.
+    int count = 1;
+    do {
+        pos = ce.find_first_of("()", pos + 1);
+        if (pos == string::npos)
+            throw Error(malformed_expr, "Expected to find a matching closing parenthesis in " + ce);
+
+        if (ce[pos] == '(')
+            ++count;
+        else
+            --count;	// must be ')'
+
+    } while (count > 0);
+
+    return pos;
+}
+
+
+
+bool NCRequestHandler::is_function_used(const ConstraintEvaluator &eval, const string &t_constraint) {
+
+    bool ret_value = false;
+
+    if(t_constraint!="") {
+        string::size_type pos = 0;
+        string::size_type first_paren = t_constraint.find("(", pos);
+        string::size_type closing_paren = string::npos;
+        if (first_paren != string::npos) 
+            closing_paren = find_closing_paren(t_constraint, first_paren); //ce.find(")", pos);
+
+        while (first_paren != string::npos && closing_paren != string::npos) {
+
+            // Maybe a BTP function; get the name of the potential function
+            string btp_name = t_constraint.substr(pos, first_paren - pos);
+            BESDEBUG("nc", " KENT BTP name is : " << btp_name << endl);
+
+            // is this a BTP function
+            btp_func f;
+            if (eval.find_function(btp_name, &f)) {
+                ret_value = true;
+                break;
+            }
+            else {
+                pos = closing_paren + 1;
+                // exception?
+                if (pos < t_constraint.length() && t_constraint.at(pos) == ',') ++pos;
+            }
+
+            first_paren = t_constraint.find("(", pos);
+            closing_paren = t_constraint.find(")", pos);
+        }        
+    }
+
+    return ret_value;
 }
