@@ -76,6 +76,7 @@ bool NCRequestHandler::_ignore_unknown_types_set = false;
 
 bool NCRequestHandler::_promote_byte_to_short = false;
 bool NCRequestHandler::_promote_byte_to_short_set = false;
+bool NCRequestHandler::_use_mds = false;
 
 unsigned int NCRequestHandler::_cache_entries = 100;
 float NCRequestHandler::_cache_purge_level = 0.2;
@@ -217,6 +218,19 @@ NCRequestHandler::NCRequestHandler(const string &name) :
                 NCRequestHandler::_promote_byte_to_short = false;
 
             NCRequestHandler::_promote_byte_to_short_set = true;
+        }
+    }
+    if (NCRequestHandler::_use_mds == false) {
+        bool key_found = false;
+        string doset;
+        TheBESKeys::TheKeys()->get_value("NC.UseMDS", doset, key_found);
+        if (key_found) {
+            doset = BESUtil::lowercase(doset);
+            if (doset == "true" || doset == "yes")
+                NCRequestHandler::_use_mds = true;
+            else
+                NCRequestHandler::_use_mds = false;
+
         }
     }
 
@@ -552,6 +566,8 @@ bool NCRequestHandler::nc_build_data(BESDataHandlerInterface & dhi)
         string container_name = bdds->get_explicit_containers() ? dhi.container->get_symbolic_name(): "";
         DDS *dds = bdds->get_dds();
 
+        if(_use_mds == true) {
+
         string rel_filepath = dhi.container->get_relative_name();
         string t_constraint = dhi.container->get_constraint();
 
@@ -559,6 +575,12 @@ bool NCRequestHandler::nc_build_data(BESDataHandlerInterface & dhi)
         // Build a DDS in the empty DDS object
         get_dds_with_attributes_data(dhi.container->access(), container_name, rel_filepath,t_constraint, eval,dds);
 
+        }
+
+        else {
+            get_dds_with_attributes(dhi.container->access(), container_name,dds);
+
+        }
         bdds->set_constraint(dhi);
         bdds->clear_container();
     }

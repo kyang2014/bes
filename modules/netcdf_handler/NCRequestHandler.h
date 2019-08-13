@@ -46,6 +46,7 @@ private:
 
 	static bool _promote_byte_to_short_set;
 	static bool _promote_byte_to_short;
+    static bool _use_mds;
 
 	static unsigned int _cache_entries;
 	static float _cache_purge_level;
