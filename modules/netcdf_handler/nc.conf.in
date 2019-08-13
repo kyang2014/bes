@@ -68,7 +68,9 @@ NC.PromoteByteToShort=true
 # changing the value and the CachePurgeLevel value below. Note that
 # this feature is on by default.
 
-NC.CacheEntries = 100
+# Turn off the memory cache to check if data access can use MDS
+NC.CacheEntries = 0
+#NC.CacheEntries = 100
 
 # The NC.CachePurgeLevel key determines how much of the in-memory cache is
 # removed when it is purged. The value 0.2 (the default) configures the 
