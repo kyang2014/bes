@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request reqID="some_unique_value" >
+    <setContext name="dap_format">dap2</setContext>
+    <setContainer name="c" space="catalog">/data/AIRS.2015.12.31.L3.RetStd_IR001.v6.0.31.0.G16118131039.nc</setContainer>
+    <define name="d">
+	<container name="c">
+	    <constraint>TotalCounts_A[0:10:179][0:10:359]</constraint>
+	</container>
+    </define>
+    <get type="dods" definition="d" />
+</request>
