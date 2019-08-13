@@ -75,6 +75,7 @@ NC.ShowSharedDimensions=false
 
 NC.CacheEntries = 0
 # NC.CachePurgeLevel = 0.2
+NC.UseMDS=true
 
 # MDS configuration - for the tests the read the DDS and DAS from the MDS,
 # use the saved/baseline MDS in data/mds_for_tests
