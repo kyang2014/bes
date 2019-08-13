@@ -380,7 +380,7 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
     else {
         if (!container_name.empty()) dds->container_name(container_name);
         dds->filename(dataset_name);
-cerr<<"dataset_name is "<<dataset_name<<endl;
+//cerr<<"dataset_name is "<<dataset_name<<endl;
 
         bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
         bool valid_mds = true;
