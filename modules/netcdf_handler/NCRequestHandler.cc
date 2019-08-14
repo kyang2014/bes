@@ -411,7 +411,7 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
 
                 NCTypeFactory NCTypeFactory(dataset_name);
                 dds->set_factory(&NCTypeFactory);
-	        mds->parse_dds_from_mds(dds,rel_file_path);
+	            mds->parse_dds_from_mds(dds,rel_file_path);
             }
             else {
                 nc_read_dataset_variables(*dds, dataset_name);
@@ -426,7 +426,7 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
         bool function_in_constraint = is_function_used(eval,t_constraint);
         
         if(true == function_in_constraint) {
-            cerr<<"function in constraint"<<endl;
+            //cerr<<"function in constraint"<<endl;
             BESDEBUG("nc", " Server-side functions are used in the expression constraint, DAS is used. " << dataset_name << endl);
             DAS* das = 0;
             if (das_cache && (das = static_cast<DAS*>(das_cache->get(dataset_name)))) {
