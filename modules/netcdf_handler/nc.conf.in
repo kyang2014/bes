@@ -71,6 +71,7 @@ NC.PromoteByteToShort=true
 # Turn off the memory cache to check if data access can use MDS
 NC.CacheEntries = 0
 #NC.CacheEntries = 100
+NC.UseMDS=true
 
 # The NC.CachePurgeLevel key determines how much of the in-memory cache is
 # removed when it is purged. The value 0.2 (the default) configures the 
@@ -78,4 +79,11 @@ NC.CacheEntries = 0
 # need to edit this to use the cache since 0.2 is the default value.
 
 # NC.CachePurgeLevel = 0.2
+
+#Change the directory at your own server
+DAP.GlobalMetadataStore.path = /opt/kent/opendap/bes-mds-no-das/opendapbin/share/mds/nc-mds
+DAP.GlobalMetadataStore.prefix = mds_for_tests_
+DAP.GlobalMetadataStore.size = 0
+
+DAP.GlobalMetadataStore.ledger = /opt/kent/opendap/bes-mds-no-das/opendapbin/share/mds/nc-mds/mds_for_tests_ledger.txt
 
