@@ -403,7 +403,7 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
         else if(false == mds->cache_enabled())
             valid_mds = false;
 
-       if(valid_mds) {
+        if(valid_mds) {
             bes::GlobalMetadataStore::MDSReadLock mds_dds_lock = mds->is_dds_available(rel_file_path);
 
             if(mds_dds_lock()) {
