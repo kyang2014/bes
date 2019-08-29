@@ -1280,6 +1280,33 @@ GlobalMetadataStore::parse_dds_from_mds(libdap::DDS* dds, const std::string &nam
 
 }
 
+// Write the data in the file to a string. 
+#if 0
+void
+GlobalMetadataStore::parse_dds_from_mds_buffer(libdap::DDS* dds, const std::string &name) {
+    string suffix = "dds_r";
+    string item_name = get_cache_file_name(get_hash(name + suffix), false);
+//cerr<<"item_name is "<<item_name <<endl;
+    int fd; // value-result parameter;
+    if (get_read_lock(item_name, fd)) {
+        VERBOSE("Metadata store: Cache hit: read " << " response for '" << name << "'." << endl);
+        BESDEBUG(DEBUG_KEY, __FUNCTION__ << " Found " << item_name << " in the store." << endl);
+        try {
+            dds->parse(item_name);
+            unlock_and_close(item_name); // closes fd
+        }
+        catch (...) {
+            unlock_and_close(item_name);
+            throw;
+        }
+    }
+    else {
+        throw BESInternalError("Could not open '" + item_name + "' in the metadata store.", __FILE__, __LINE__);
+    }
+
+}
+#endif
+
 void
 GlobalMetadataStore::parse_das_from_mds(libdap::DAS* das, const std::string &name) {
  

@@ -411,6 +411,20 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
 
                 NCTypeFactory NCTypeFactory(dataset_name);
                 dds->set_factory(&NCTypeFactory);
+
+                // Here we need to implement another key, to see if we can build the DDS from constraint.
+                // Better implement in the HDF5 handler,however, we have to build DDS for each data type.
+                // This cannot be done with the HDF5 CF option.
+                #if 0
+                    // read str from mds
+                    string str;
+                    mds->read_str_from_mds(str,rel_file_path);
+                    // Assemble new DDS str according to expression constraint
+                    obtain_str()
+                    
+
+
+                #endif
 	            mds->parse_dds_from_mds(dds,rel_file_path);
             }
             else {
