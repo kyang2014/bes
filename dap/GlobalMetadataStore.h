@@ -271,6 +271,8 @@ public:
 
     virtual void parse_dds_from_mds(libdap::DDS* dds, const std::string &name);
     virtual void parse_das_from_mds(libdap::DAS*das, const std::string &name);
+
+    virtual void read_str_from_mds(std::string &str,const std::string &name);
 };
 
 } // namespace bes

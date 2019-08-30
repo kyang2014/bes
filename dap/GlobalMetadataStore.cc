@@ -1281,31 +1281,53 @@ GlobalMetadataStore::parse_dds_from_mds(libdap::DDS* dds, const std::string &nam
 }
 
 // Write the data in the file to a string. 
-#if 0
+//#if 0
 void
-GlobalMetadataStore::parse_dds_from_mds_buffer(libdap::DDS* dds, const std::string &name) {
+GlobalMetadataStore::read_str_from_mds(std::string &str, const std::string &name) {
     string suffix = "dds_r";
     string item_name = get_cache_file_name(get_hash(name + suffix), false);
-//cerr<<"item_name is "<<item_name <<endl;
     int fd; // value-result parameter;
     if (get_read_lock(item_name, fd)) {
         VERBOSE("Metadata store: Cache hit: read " << " response for '" << name << "'." << endl);
         BESDEBUG(DEBUG_KEY, __FUNCTION__ << " Found " << item_name << " in the store." << endl);
-        try {
-            dds->parse(item_name);
+
+        struct stat sb;
+        if(stat(item_name.c_str(),&sb)!=0) {
             unlock_and_close(item_name); // closes fd
+            throw BESInternalError("Could not obtain statistics of '" + item_name + "' in the metadata store.", __FILE__, __LINE__);
         }
-        catch (...) {
-            unlock_and_close(item_name);
-            throw;
+
+        size_t bytes_expected_read = (size_t)sb.st_size;
+
+        // Allocate the buffer size based on the file size.
+        vector<char> temp_buf;
+        temp_buf.resize(bytes_expected_read);
+        size_t bytes_really_read = read(fd,(void*)&temp_buf[0],bytes_expected_read);
+
+        // Now bytes_really_read should be the same as bytes_expected_read if the element size is 1.
+        if(bytes_really_read != bytes_expected_read) {
+            stringstream s_bytes_really_read;
+            s_bytes_really_read << bytes_really_read ;
+            stringstream s_bytes_expected_read;
+            s_bytes_expected_read << bytes_expected_read;
+            string msg = "The expected bytes to read from DDS cache file " + item_name +" is " + s_bytes_expected_read.str();
+            msg = msg + ". But the real read size from the buffer is  " + s_bytes_really_read.str();
+            unlock_and_close(item_name); // closes fd
+            throw BESInternalError(msg, __FILE__, __LINE__);
         }
+        
+        if(temp_buf.empty() !=true) 
+            str = string(&temp_buf[0],temp_buf.size());    
+        
+        unlock_and_close(item_name); // closes fd
+        
     }
     else {
         throw BESInternalError("Could not open '" + item_name + "' in the metadata store.", __FILE__, __LINE__);
     }
 
 }
-#endif
+//#endif
 
 void
 GlobalMetadataStore::parse_das_from_mds(libdap::DAS* das, const std::string &name) {
