@@ -795,6 +795,7 @@ static string::size_type find_closing_paren(const string &ce, string::size_type 
 bool NCRequestHandler::is_function_used(const ConstraintEvaluator &eval, const string &t_constraint) {
 
     bool ret_value = false;
+    BESDEBUG("nc", " KENT t_constraint is : " << t_constraint << endl);
 
     if(t_constraint!="") {
         string::size_type pos = 0;
@@ -807,8 +808,8 @@ bool NCRequestHandler::is_function_used(const ConstraintEvaluator &eval, const s
 
             // Maybe a BTP function; get the name of the potential function
             string btp_name = t_constraint.substr(pos, first_paren - pos);
-            BESDEBUG("nc", " KENT BTP name is : " << btp_name << endl);
 
+            BESDEBUG("nc", " KENT BTP name is : " << btp_name << endl);
             // is this a BTP function
             btp_func f;
             if (eval.find_function(btp_name, &f)) {
