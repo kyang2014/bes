@@ -1146,30 +1146,28 @@ for (int i = 0; i <new_str_vec_size;i++) {
 
 vector<string> NCRequestHandler::obtain_vars_from_constraint(const string& constraint_str) {
 
-  string tstr = "temp,u[0:10:15][0:1:2],AC.BD[0:1:2],v,w[0:1:2]";
-cerr<<tstr <<endl;
+    //string tstr = "temp,u[0:10:15][0:1:2],AC.BD[0:1:2],v,w[0:1:2]";
+    //cerr<<tstr <<endl;
 
-// Split the string to a vector. Each element is a new line.
-// Pop out the last element since it is one after \n. 
-char sep = ',';
-vector<string> tstr_vec= split_string(tstr,sep);
+    // Split the string to a vector. Each element is a new line.
+    // Pop out the last element since it is one after \n. 
+    char sep = ',';
+    vector<string> tstr_vec= split_string(constraint_str,sep);
+//#if 0
+    for (unsigned int i = 0; i <tstr_vec.size(); i++) {
+        cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
+        string tempstr = tstr_vec[i];
+        size_t end = 0;
+        if((end=tempstr.find('.'))!=string::npos)
+            tstr_vec[i] = tempstr.substr(0,end);
+        else if((end=tempstr.find('['))!=string::npos)
+            tstr_vec[i] = tempstr.substr(0,end);
+    }
 
-#if 0
-for (int i = 0; i <tstr_vec.size(); i++) {
-  cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
-  string tempstr = tstr_vec[i];
-  size_t end = 0;
-  if((end=tempstr.find('.'))!=string::npos)
-      tstr_vec[i] = tempstr.substr(0,end);
-  else if((end=tempstr.find('['))!=string::npos)
-      tstr_vec[i] = tempstr.substr(0,end);
-}
-
-cout <<"After modifying "<<endl;
-for (int i = 0; i <tstr_vec.size(); i++) 
-  cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
-
-#endif
+    cout <<"After modifying "<<endl;
+    for (unsigned int i = 0; i <tstr_vec.size(); i++) 
+        cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
+//#endif
   return tstr_vec;
 
 
