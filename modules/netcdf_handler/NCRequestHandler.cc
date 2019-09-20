@@ -26,6 +26,8 @@
 
 #include "config_nc.h"
 
+#include <list>
+//#include <algorithm>
 #include <string>
 #include <sstream>
 #include <exception>
@@ -394,7 +396,6 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
     else {
         if (!container_name.empty()) dds->container_name(container_name);
         dds->filename(dataset_name);
-//cerr<<"dataset_name is "<<dataset_name<<endl;
 
         bes::GlobalMetadataStore *mds=bes::GlobalMetadataStore::get_instance();
         bool valid_mds = true;
@@ -415,6 +416,9 @@ void NCRequestHandler::get_dds_with_attributes_data(const string& dataset_name, 
                 string dds_str;
                 mds->read_str_from_mds(dds_str,rel_file_path);
                 cerr<<"dds_str is "<<dds_str <<endl;
+                cerr<<"t_constraint is "<<t_constraint<<endl;
+                //string reduced_dds_str = reconstruct_dds(dds_str,t_constraint);
+                //dds->parse_buffer(reduced_dds_str);
 
                 // Here we need to implement another key, to see if we can build the DDS from constraint.
                 // Better implement in the HDF5 handler,however, we have to build DDS for each data type.
@@ -846,3 +850,328 @@ bool NCRequestHandler::is_function_used(const ConstraintEvaluator &eval, const s
 
     return ret_value;
 }
+
+  
+// https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string/236803#236803
+vector<string> NCRequestHandler::split_string(const string &text,char sep) {
+
+    std::vector<std::string> tokens;
+    std::size_t start = 0, end = 0;
+    while ((end = text.find(sep, start)) != std::string::npos) {
+        tokens.push_back(text.substr(start, end - start));
+        start = end + 1;
+    }
+    tokens.push_back(text.substr(start));
+    return tokens;
+
+}
+
+inline bool NCRequestHandler::has_same_num_spaces(const string & str,const int num_indent_spaces) {
+    int str_num_indent_spaces = 0;
+    for (unsigned int i = 0; i<str.size(); i++) {
+        if(str[i] ==' ')
+            str_num_indent_spaces++;
+        else
+            break;
+    }
+    return (str_num_indent_spaces==num_indent_spaces);
+
+}
+
+inline bool NCRequestHandler::find_in_the_vector(int i, const vector<int>& sorted_vec) {
+    vector<int>::const_iterator low;
+    low = lower_bound(sorted_vec.begin(),sorted_vec.end(),i);
+    if(*low == i)
+        return true;
+    else
+      	return false;
+}
+
+string NCRequestHandler::obtain_reduced_dds(const string& dds_str, const string& constraint_str) {
+#if 0
+// Obtain variable names from the new DDS vector string.
+vector <string>new_str_var_vec;
+new_str_var_vec.resize(new_str_vec_size);
+if(nb_list.size() == new_str_vec.size()) {//All complex
+     for (int i = 0; i <new_str_vec_size;i++) {
+	     string temp_str = new_str_vec[i];
+         size_t var_ep = temp_str.find_last_of(';');		
+         size_t var_sp = temp_str.find_last_of('}',var_ep-1);
+         new_str_var_vec[i] = temp_str.substr(var_sp+2,var_ep-var_sp-2);
+     }
+}
+
+else if(nb_list.size() == 0) {// Atomic
+     for (int i = 0; i <new_str_vec_size;i++) {
+             string temp_str = new_str_vec[i];
+             size_t var_type_sp = temp_str.find_first_not_of(' ');
+             size_t var_sp = temp_str.find_first_of(' ',var_type_sp)+1;
+             size_t var_ep = temp_str.find_first_of('[',var_sp);
+             if(var_ep ==string::npos) 
+                var_ep = temp_str.find_last_of(';');
+             new_str_var_vec[i] = temp_str.substr(var_sp,var_ep-var_sp);
+     }
+}
+
+else {//Mix
+    for (int i = 0; i <new_str_vec_size;i++) {
+	    if(true == find_in_the_vector(i,nb_list)){
+	         string temp_str = new_str_vec[i];
+             size_t var_ep = temp_str.find_last_of(';');		
+             size_t var_sp = temp_str.find_last_of('}',var_ep-1);
+             new_str_var_vec[i] = temp_str.substr(var_sp+2,var_ep-var_sp-2);
+        }
+        else {
+             string temp_str = new_str_vec[i];
+             size_t var_type_sp = temp_str.find_first_not_of(' ');
+             size_t var_sp = temp_str.find_first_of(' ',var_type_sp)+1;
+             size_t var_ep = temp_str.find_first_of('[',var_sp);
+             if(var_ep ==string::npos) 
+                var_ep = temp_str.find_last_of(';');
+             new_str_var_vec[i] = temp_str.substr(var_sp,var_ep-var_sp);
+        }
+    }
+}
+for (int i = 0; i <new_str_vec_size;i++) {
+	cout <<i <<endl;
+    cout <<new_str_var_vec[i]<<endl;
+}
+vector<string> candidate_str;
+candidate_str.push_back("v");
+candidate_str.push_back("time");
+candidate_str.push_back("scan_line");
+candidate_str.push_back("codec_name");
+
+vector<string> select_str;
+
+for (int i =0; i<candidate_str.size();i++) {
+    for (int j =0; j<new_str_var_vec.size();j++) {
+        if(candidate_str[i] == new_str_var_vec[j]) {
+            select_str.push_back(new_str_vec[j]);
+            break;
+        }
+    }
+}
+cout<<"Final reduced DDS " <<endl;
+for (int i = 0; i <candidate_str.size();i++) {
+	cout <<i <<endl;
+    cout <<select_str[i]<<endl;
+}
+#endif
+string final_reduced_dds;
+// Combine starting line, select_str and ending line to one DDS.
+  return final_reduced_dds;
+
+
+
+}
+
+void NCRequestHandler::reconstruct_dds(const string& dds_str,vector<string>& dds_content_in_vector,vector<int>&cvar_index,vector<string>&dds_cover_in_vector) {
+
+#if 0
+cerr<<tstr <<endl;
+
+// Split the string to a vector. Each element is a new line.
+// Pop out the last element since it is one after \n. 
+char sep = '\n';
+vector<string> tstr_vec= split_string(tstr,sep);
+if(tstr_vec.size()<=2) {
+    cerr<<"the DDS cannot be splitted, fall back to the old way.\n";
+    throw BESInternalError("DDS needs to contain at least two lines.", __FILE__, __LINE__);
+}
+else
+	tstr_vec.pop_back();
+
+// Obtain the first line and the last line. 
+// This will be used in the new DDS.
+string start_line = tstr_vec[0];
+string end_line = tstr_vec.back();
+cerr<<"start_line is "<<start_line <<endl;
+cerr<<"end_line is "<<end_line <<endl;
+
+// Re-organize/resume the number of elements for the body part.
+tstr_vec.pop_back();
+tstr_vec.erase(tstr_vec.begin());
+
+for (int i = 0; i <tstr_vec.size(); i++) {
+  tstr_vec[i]+='\n';
+  cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
+}
+
+
+char space_char=' ';
+string temp_str = tstr_vec[0];
+if(temp_str[0]!=space_char) {
+   cerr<<"the variable in the DDS must start from a space. \n";
+   throw BESInternalError("The variable in the DDS must start from a space.", __FILE__, __LINE__);
+}
+// Count the number of spaces before a non-space character at the first line
+int num_indent_spaces = 0;
+for (int i = 0; i<temp_str.size(); i++) {
+    if(temp_str[i] ==space_char)
+        num_indent_spaces++;
+    else
+        break;
+}
+cerr<<"num_indent_spaces is "<<num_indent_spaces <<endl;
+
+//May not do this: TODO: check the first and last line whether containing { and }, if not. an error.
+char start_bracket='{';
+char end_bracket='}';
+
+// Find the outer most { and } positions.
+// sb_list: list of {(start) positions
+// eb_list: list of }(end) positions
+// db_list: list of subtraction(difference) of } to { positions.
+list<int> sb_list;
+list<int> eb_list;
+list<int> db_list;
+
+int b_list_size = 0;
+for (int i =0; i <tstr_vec.size();i++) {
+    if(tstr_vec[i].find(start_bracket,0)!=string::npos) {
+       if(true == has_same_num_spaces(tstr_vec[i],num_indent_spaces)) {
+          //insert the list of { index
+          sb_list.push_back(i);
+          b_list_size++;
+       }
+    }
+    if(tstr_vec[i].find(end_bracket,0)!=string::npos) {
+       if(true == has_same_num_spaces(tstr_vec[i],num_indent_spaces)) {
+          eb_list.push_back(i);
+          //insert the list of } index
+
+       }
+    }
+
+}
+
+cout<<"starting bracket \n";
+for (list<int>::iterator it=sb_list.begin(); it!=sb_list.end();++it) 
+    cout<<' '<<*it;
+cout <<endl;
+
+cout <<"ending bracket \n";
+for (list<int>::iterator it=eb_list.begin(); it!=eb_list.end();++it) 
+    cout<<' '<<*it;
+cout <<endl;
+
+
+// Better to have a check: TODO: Need to have a sanity check of { and } brackets. 
+// 1. The same number
+// 2. The order is always { then }.} should always be greater than {.
+// Form a vector with one { and one } in order. Then check if the vector is sorted
+// wit(c++ 11 has a STL is_sorted can be used if compiling with C++ 11.
+// bool test(vector<int> v) {
+//     for(int i = 0; i < v.size()-1; i++)
+//             if(v[i] > v[i+1])
+//                         return false;
+//                             return true;
+//                             }
+//
+
+// 
+// The following while loop does three things:
+// 1) Calculate the total number of lines for lines with all outer brackets.
+// 2) Obtain the list of position subtraction from } to {.
+// 3) For a new list of string vb(value within brackets) for all bracket pairs.
+list<int>::iterator it_sb = sb_list.begin();
+list<int>::iterator it_eb = eb_list.begin();
+
+list<string> vb;
+int num_v_lines = 0;
+while(it_sb!=sb_list.end() && it_eb!=eb_list.end()) 
+{
+    string temp_str;
+    for(int i = (*it_sb); i<=(*it_eb);i++) {
+        temp_str += tstr_vec[i];
+        num_v_lines++;
+    }
+    db_list.push_back((*it_eb)-(*it_sb));
+    vb.push_back(temp_str);
+    it_sb++;
+    it_eb++;
+}
+
+cout <<"number of v lines is "<<num_v_lines <<endl;
+cout <<"bracket elements \n";
+for (list<string>::iterator it=vb.begin(); it!=vb.end();++it) 
+    cout<<*it <<endl;
+cout <<endl;
+
+// Obtain the size of new vector DDS.
+int new_str_vec_size = tstr_vec.size()-num_v_lines+b_list_size;
+cout <<"new_str_vec_size is "<<new_str_vec_size <<endl;
+
+// Need to calculate the bracket position at the new string.
+int tc = 0;
+
+vector<string> new_str_vec;
+new_str_vec.resize(new_str_vec_size);
+// index of nb_list
+vector<int> nb_list;
+
+for (int i = 0; i <new_str_vec_size;i++) {
+    // Check if sb_list is empty
+    if(sb_list.empty()!=true) {
+        // If not empty, check if the position in the
+        // original vector is the same as the position of {
+        // tc is the incremental counter of the position.
+        if((i+tc) == sb_list.front()) {
+            new_str_vec[i] = vb.front();
+            // Need to increase the number of lines within {};
+            tc += db_list.front();
+            // After this position, pop it out of the list.
+            sb_list.pop_front();
+            db_list.pop_front();
+            vb.pop_front();
+            nb_list.push_back(i);
+        }
+        else 
+            new_str_vec[i] = tstr_vec[i+tc];
+    }
+    else 
+        new_str_vec[i] = tstr_vec[i+tc];
+
+}
+
+// Check the final output
+for (int i = 0; i <new_str_vec_size;i++) {
+	cout <<i <<endl;
+    cout <<new_str_vec[i]<<endl;
+}
+
+#endif
+}
+
+vector<string> NCRequestHandler::obtain_vars_from_constraint(const string& constraint_str) {
+
+  string tstr = "temp,u[0:10:15][0:1:2],AC.BD[0:1:2],v,w[0:1:2]";
+cerr<<tstr <<endl;
+
+// Split the string to a vector. Each element is a new line.
+// Pop out the last element since it is one after \n. 
+char sep = ',';
+vector<string> tstr_vec= split_string(tstr,sep);
+
+#if 0
+for (int i = 0; i <tstr_vec.size(); i++) {
+  cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
+  string tempstr = tstr_vec[i];
+  size_t end = 0;
+  if((end=tempstr.find('.'))!=string::npos)
+      tstr_vec[i] = tempstr.substr(0,end);
+  else if((end=tempstr.find('['))!=string::npos)
+      tstr_vec[i] = tempstr.substr(0,end);
+}
+
+cout <<"After modifying "<<endl;
+for (int i = 0; i <tstr_vec.size(); i++) 
+  cerr<<"tstr_vec["<<i<<"] = "<<tstr_vec[i] <<endl;
+
+#endif
+  return tstr_vec;
+
+
+}
+

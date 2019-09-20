@@ -28,6 +28,7 @@
 #define I_NCRequestHandler_H 1
 
 #include <BESRequestHandler.h>
+#include <vector>
 
 class ObjMemCache;  // in bes/dap
 
@@ -58,6 +59,14 @@ private:
     static void get_dds_with_attributes(const std::string& dataset_name, const std::string& container_name, libdap::DDS* dds);
     static void get_dds_with_attributes_data(const std::string& dataset_name, const std::string& container_name, const std::string& rel_filepath,const std::string &t_constraint, const libdap::ConstraintEvaluator &eval, libdap::DDS* dds);
     static bool is_function_used(const libdap::ConstraintEvaluator &eval, const string & t_constraint);
+
+    static std::string obtain_reduced_dds(const std::string& dds_str, const std::string& constraint_str);
+    static void reconstruct_dds(const std::string& dds_str,std::vector<std::string>& dds_content_in_vector,std::vector<int>&cvar_index,std::vector<std::string>&dds_cover_in_vector);
+    static std::vector<std::string> obtain_vars_from_constraint(const std::string& constraint_str);
+    static std::vector<std::string> split_string(const std::string &text, char sep);
+    static inline bool has_same_num_spaces(const string & str,const int num_indent_spaces);
+    static inline bool find_in_the_vector(int i, const std::vector<int>& sorted_vec);
+
 
 
 public:
