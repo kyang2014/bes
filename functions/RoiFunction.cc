@@ -115,7 +115,11 @@ function_dap2_roi(int argc, BaseType *argv[], DDS &, BaseType **btpp)
             for (Array::Dim_iter iter = the_array->dim_begin(); iter< the_array->dim_end(); iter++){
                 string cname = the_array->dimension_name(iter);
                 if (the_array->dimension_name(iter) != name) continue;
-                the_array->add_constraint(iter, start, 1 /*stride*/, stop);
+                if (stop >= 0) {
+                    the_array->add_constraint(iter, start, 1 /*stride*/, stop, false);
+                } else {
+                    the_array->add_constraint(iter, start, 1 /*stride*/, 0, true);
+                }
             }
         }
 

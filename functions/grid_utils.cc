@@ -141,8 +141,8 @@ static void apply_grid_selection_expr(Grid *grid, GSEClause *clause)
     Array *map = dynamic_cast < Array * >((*map_i));
     if (!map)
         throw InternalErr(__FILE__, __LINE__, "Expected an Array");
-    int start = max(map->dimension_start(map->dim_begin()), clause->get_start());
-    int stop = min(map->dimension_stop(map->dim_begin()), clause->get_stop());
+    int start = max((int)map->dimension_start(map->dim_begin()), clause->get_start());
+    int stop = min((int)map->dimension_stop(map->dim_begin()), clause->get_stop());
 
     if (start > stop) {
         ostringstream msg;
@@ -158,8 +158,13 @@ static void apply_grid_selection_expr(Grid *grid, GSEClause *clause)
     BESDEBUG("GeoGrid", "Setting constraint on " << map->name() << "[" << start << ":" << stop << "]" << endl);
 
     // Stride is always one.
-    map->add_constraint(map->dim_begin(), start, 1, stop);
-    grid->get_array()->add_constraint(grid_dim, start, 1, stop);
+    if (stop >= 0) {
+        map->add_constraint(map->dim_begin(), start, 1, stop, false);
+        grid->get_array()->add_constraint(grid_dim, start, 1, stop, false);
+    } else {
+        map->add_constraint(map->dim_begin(), start, 1, 0, true);
+        grid->get_array()->add_constraint(grid_dim, start, 1, 0, true);
+    }
 }
 
 void apply_grid_selection_expressions(Grid * grid, vector < GSEClause * >clauses)
