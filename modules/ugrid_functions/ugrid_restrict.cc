@@ -335,12 +335,20 @@ static void rDAWorker(MeshDataVariable *mdv, libdap::Array::Dim_iter thisDim, ve
         BESDEBUG("ugrid", "rdaWorker() - array state: " << arrayState(dapArray, "    "));
 
         for (unsigned int dimIndex = start; dimIndex <= stop; dimIndex += stride) {
-            dapArray->add_constraint(thisDim, dimIndex, 1, dimIndex);
+            if (dimIndex >= 0) {
+                dapArray->add_constraint(thisDim, dimIndex, 1, dimIndex, false);
+            } else {
+                dapArray->add_constraint(thisDim, dimIndex, 1, 0, true);
+            }
             rDAWorker(mdv, thisDim + 1, slab_subset_index, results);
         }
 
         // Reset the constraint for this dimension.
-        dapArray->add_constraint(thisDim, start, stride, stop);
+        if (stop >= 0) {
+            dapArray->add_constraint(thisDim, start, stride, stop, false);
+        } else {
+            dapArray->add_constraint(thisDim, start, stride, 0, true);
+        }
     }
     else {
         BESDEBUG("ugrid", "rdaWorker() - Found locationCoordinateDim" << endl);
