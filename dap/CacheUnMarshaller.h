@@ -75,8 +75,8 @@ public:
     virtual void get_opaque(char *val, unsigned int len);
     virtual void get_int(int &val);
 
-    virtual void get_vector(char **val, unsigned int &num, libdap::Vector &);
-    virtual void get_vector(char **val, unsigned int &num, int width, libdap::Vector &);
+    virtual void get_vector(char **val, uint64_t &num, libdap::Vector &);
+    virtual void get_vector(char **val, uint64_t &num, int width, libdap::Vector &);
 
     virtual void dump(ostream &strm) const;
 };

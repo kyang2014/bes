@@ -107,12 +107,12 @@ void CacheUnMarshaller::get_int(int &val)
  * @param bytes
  * @param
  */
-void CacheUnMarshaller::get_vector(char **val, unsigned int &bytes, Vector &)
+void CacheUnMarshaller::get_vector(char **val, uint64_t &bytes, Vector &)
 {
     d_in.read(*val, bytes);
 }
 
-void CacheUnMarshaller::get_vector(char **val, unsigned int &num, int width, Vector &)
+void CacheUnMarshaller::get_vector(char **val, uint64_t &num, int width, Vector &)
 {
     d_in.read(*val, num * width);
 }
