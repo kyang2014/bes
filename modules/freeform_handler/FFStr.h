@@ -46,7 +46,7 @@ using namespace libdap ;
 
 class FFStr: public Str {
 private:
-	int d_length;
+	uint64_t d_length;
 
 public:
     FFStr(const string &n, const string &d);
@@ -56,8 +56,8 @@ public:
 
     virtual bool read();
 
-    virtual void set_length(int len) { d_length = len; }
-    virtual int length() const { return d_length; }
+    virtual void set_length(uint64_t len) { d_length = len; }
+    virtual uint64_t length() const { return d_length; }
 };
 
 // $Log: FFStr.h,v $
