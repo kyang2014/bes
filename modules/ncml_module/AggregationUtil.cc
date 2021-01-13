@@ -776,7 +776,11 @@ void AggregationUtil::transferArrayConstraints(Array* pToArray, const Array& fro
 // If aggregates with renaming dimensions do not match each other. SK 07/26/18
 //        NCML_ASSERT_MSG(fromArrIt->name == toArrIt->name, "GAggregationUtil::transferArrayConstraints: "
 //            "Expected the dimensions to have the same name but they did not.");
-        pToArray->add_constraint(toArrIt, fromArrIt->start, fromArrIt->stride, fromArrIt->stop);
+        if (fromArrIt->stop >= 0) {
+            pToArray->add_constraint(toArrIt, fromArrIt->start, fromArrIt->stride, fromArrIt->stop, false);
+        } else {
+            pToArray->add_constraint(toArrIt, fromArrIt->start, fromArrIt->stride, 0, true);
+        }
         ++toArrIt;
     }
 

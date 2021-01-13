@@ -74,7 +74,7 @@ public:
 
     // Specializations
 
-    virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t stop, bool setStop);
     virtual void reset_constraint();
 
     /** @deprecated */
@@ -149,8 +149,8 @@ public:
     virtual unsigned int width(bool constrained = false);
 #endif
 
-    virtual unsigned int buf2val(void **val);
-    virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual uint64_t buf2val(void **val);
+    virtual uint64_t val2buf(void *val, bool reuse = false);
 
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(dods_int8 *val, int sz);

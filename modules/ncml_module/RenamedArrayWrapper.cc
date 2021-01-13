@@ -91,10 +91,15 @@ RenamedArrayWrapper::operator=(const RenamedArrayWrapper& rhs)
 /// Wrappers
 
 #if 1
-void RenamedArrayWrapper::add_constraint(Dim_iter i, int start, int stride, int stop)
+void RenamedArrayWrapper::add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t stop, bool setStop)
 {
     // Set the constraint on the dimension and then sync the wrapped array to the new constraint.
-    Array::add_constraint(i, start, stride, stop);
+    //if (stop >= 0) {
+    if (setStop == false) {
+        Array::add_constraint(i, start, stride, stop, false);
+    } else {
+        Array::add_constraint(i, start, stride, 0, true);
+    }
     syncConstraints();
 }
 
@@ -350,13 +355,13 @@ RenamedArrayWrapper::width(bool constrained)
 }
 #endif
 
-unsigned int RenamedArrayWrapper::buf2val(void **val)
+uint64_t RenamedArrayWrapper::buf2val(void **val)
 {
     //syncConstraints();
     return _pArray->buf2val(val);
 }
 
-unsigned int RenamedArrayWrapper::val2buf(void *val, bool reuse /* = false */)
+uint64_t RenamedArrayWrapper::val2buf(void *val, bool reuse /* = false */)
 {
     //syncConstraints();
     return _pArray->val2buf(val, reuse);
