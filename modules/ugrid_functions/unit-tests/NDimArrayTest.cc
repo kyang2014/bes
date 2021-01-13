@@ -107,7 +107,11 @@ CPPUNIT_TEST_SUITE( NDimArrayTest );
         libdap::Array::Dim_iter dIt;
         int i = 0;
         for (dIt = test.dim_begin(); dIt != test.dim_end(); dIt++, i++) {
-            test.add_constraint(dIt, start[i], stride[i], stop[i]);
+            if ( stop[i] >= 0) {
+                test.add_constraint(dIt, start[i], stride[i], stop[i], false);
+            } else {
+                test.add_constraint(dIt, start[i], stride[i], 0, true);
+            }
         }
         long constrainedSize = libdap::NDimensionalArray::computeConstrainedShape(&test, &shape);
 
@@ -181,7 +185,11 @@ CPPUNIT_TEST_SUITE( NDimArrayTest );
         libdap::Array::Dim_iter dIt;
         int i = 0;
         for (dIt = test.dim_begin(); dIt != test.dim_end(); dIt++, i++) {
-            test.add_constraint(dIt, start[i], stride[i], stop[i]);
+            if (stop[i] >= 0) {
+                test.add_constraint(dIt, start[i], stride[i], stop[i], false);
+            } else {
+                test.add_constraint(dIt, start[i], stride[i], 0, true);
+            }
         }
 
         unsigned long constrainedSize = libdap::NDimensionalArray::computeConstrainedShape(&test, &shape);
