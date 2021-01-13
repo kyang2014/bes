@@ -105,7 +105,7 @@ void CacheMarshaller::put_int(int val)
    d_out.write(reinterpret_cast<char*>(&val), sizeof(val));
 }
 
-void CacheMarshaller::put_vector(char *val, int num, int width, Vector &vec)
+void CacheMarshaller::put_vector(char *val, uint64_t num, int width, Vector &vec)
 {
     put_vector(val, num, width, vec.var()->type());
 }
@@ -118,9 +118,14 @@ void CacheMarshaller::put_vector(char *val, int num, int width, Vector &vec)
  * @see put_vector_part()
  * @see put_vector_end()
  */
-void CacheMarshaller::put_vector_start(int num)
+void CacheMarshaller::put_vector_start(uint64_t num)
 {
-    put_int(num);
+    // Make sure we only do this for vectors less than DODS_INT_MAX size.
+    if (num > DODS_INT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "put_vector_start: num greater than DODS_INT_MAX.");
+    }
+    unsigned int vec_num = static_cast<unsigned int>(num);
+    put_int(vec_num);
 }
 
 /**
@@ -134,17 +139,22 @@ void CacheMarshaller::put_vector_end()
 }
 
 // Start of parallel I/O support. jhrg 8/19/15
-void CacheMarshaller::put_vector(char *val, int num, Vector &)
+void CacheMarshaller::put_vector(char *val, uint64_t num, Vector &)
 {
     assert(val || num == 0);
 
+    // Make sure we only do this for vectors less than DODS_INT_MAX size.
+    if (num > DODS_INT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
+    }
+    int vec_num = static_cast<int>(num);
     // write the number of array members being written, then set the position back to 0
-    put_int(num);
+    put_int(vec_num);
 
     if (num == 0)
         return;
 
-    d_out.write(val, num);
+    d_out.write(val, vec_num);
 }
 
 // private
@@ -158,17 +168,22 @@ void CacheMarshaller::put_vector(char *val, int num, Vector &)
  * @param width The number of bytes in each element
  * @param type The DAP type of the elements
  */
-void CacheMarshaller::put_vector(char *val, unsigned int num, int width, Type)
+void CacheMarshaller::put_vector(char *val, uint64_t num, int width, Type)
 {
     assert(val || num == 0);
 
+    // Make sure we only do this for vectors less than DODS_INT_MAX size.
+    if (num > DODS_INT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
+    }
+    int vec_num = static_cast<int>(num);
     // write the number of array members being written, then set the position back to 0
-    put_int(num);
+    put_int(vec_num);
 
     if (num == 0)
         return;
 
-    d_out.write(val, num * width);
+    d_out.write(val, vec_num * width);
 }
 
 /**
@@ -182,9 +197,14 @@ void CacheMarshaller::put_vector(char *val, unsigned int num, int width, Type)
  * @see put_vector_start()
  * @see put_vector_end()
  */
-void CacheMarshaller::put_vector_part(char *val, unsigned int num, int width, Type )
+void CacheMarshaller::put_vector_part(char *val, uint64_t num, int width, Type )
 {
-    d_out.write(val, num * width);
+    // Make sure we only do this for vectors less than DODS_INT_MAX size.
+    if (num > DODS_INT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "put_vector_part: num greater than DODS_INT_MAX.");
+    }
+    unsigned int vec_num = static_cast<unsigned int>(num);
+    d_out.write(val, vec_num * width);
 }
 
 void CacheMarshaller::dump(ostream &strm) const

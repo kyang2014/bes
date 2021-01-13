@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include <Marshaller.h>     // from libdap
+#include <dods-limits.h>
 
 // namespace bes {
 
@@ -47,7 +48,7 @@ private:
     CacheMarshaller(const CacheMarshaller &m);
     CacheMarshaller &operator=(const CacheMarshaller &);
 
-    void put_vector(char *val, unsigned int num, int width, libdap::Type);
+    void put_vector(char *val, uint64_t num, int width, libdap::Type);
 
 public:
     CacheMarshaller(ostream &out): Marshaller(), d_out(out) { }
@@ -70,11 +71,11 @@ public:
     virtual void put_opaque(char *val, unsigned int len);
     virtual void put_int(int val);
 
-    virtual void put_vector(char *val, int num, libdap::Vector &);
-    virtual void put_vector(char *val, int num, int width, libdap::Vector &);
+    virtual void put_vector(char *val, uint64_t num, libdap::Vector &);
+    virtual void put_vector(char *val, uint64_t num, int width, libdap::Vector &);
 
-    virtual void put_vector_start(int num);
-    virtual void put_vector_part(char *val, unsigned int num, int width, libdap::Type);
+    virtual void put_vector_start(uint64_t num);
+    virtual void put_vector_part(char *val, uint64_t num, int width, libdap::Type);
     virtual void put_vector_end();
 
     virtual void dump(ostream &strm) const;
