@@ -79,9 +79,10 @@ AsciiSequence::~AsciiSequence()
 {
 }
 
-int AsciiSequence::length() const
+uint64_t AsciiSequence::length() const
 {
-    return -1;
+    return 0;
+    //return -1;
 }
 
 // This specialization is different from the Sequence version only in that
