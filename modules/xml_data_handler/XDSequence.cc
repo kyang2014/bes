@@ -79,10 +79,11 @@ XDSequence::~XDSequence()
 {
 }
 
-int
+uint64_t
 XDSequence::length() const
 {
-    return -1;
+    return 0;
+    //return -1;
 }
 
 // This specialization is different from the Sequence version only in that

@@ -44,7 +44,7 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual int length() const;
+    virtual uint64_t length() const;
     virtual int element_count(bool leaves = false);
 
     virtual void start_xml_declaration(libdap::XMLWriter *writer, const char *element = 0);
