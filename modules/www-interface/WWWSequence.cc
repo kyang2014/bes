@@ -76,9 +76,10 @@ WWWSequence::~WWWSequence()
 {
 }
 
-int WWWSequence::length() const
+uint64_t WWWSequence::length() const
 {
-    return -1;
+    return 0;
+    //return -1;
 }
 
 bool WWWSequence::is_simple_sequence()
