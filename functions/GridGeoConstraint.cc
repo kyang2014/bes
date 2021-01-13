@@ -291,11 +291,16 @@ void GridGeoConstraint::apply_constraint_to_data()
         throw Error("The upper and lower latitude indices appear to be reversed. Please provide the latitude bounding box numbers giving the northern-most latitude first.");
 
     // Constrain the lat vector and lat dim of the array
-    d_latitude->add_constraint(fd, get_latitude_index_top(), 1,
-                               get_latitude_index_bottom());
-    d_grid->get_array()->add_constraint(get_lat_dim(),
-                                        get_latitude_index_top(), 1,
-                                        get_latitude_index_bottom());
+    if (get_latitude_index_bottom() >= 0) {
+        d_latitude->add_constraint(fd, get_latitude_index_top(), 1,
+                                   get_latitude_index_bottom(), false);
+        d_grid->get_array()->add_constraint(get_lat_dim(),
+                                            get_latitude_index_top(), 1,
+                                            get_latitude_index_bottom(), false);
+    } else {
+        d_latitude->add_constraint(fd, get_latitude_index_top(), 1, 0, true);
+        d_grid->get_array()->add_constraint(get_lat_dim(), get_latitude_index_top(), 1, 0, true);
+    }
 
     // Does the longitude constraint cross the edge of the longitude vector?
     // If so, reorder the grid's data (array), longitude map vector and the
@@ -338,12 +343,18 @@ void GridGeoConstraint::apply_constraint_to_data()
 
     // Apply constraint; stride is always one and maps only have one dimension
     fd = d_longitude->dim_begin();
-    d_longitude->add_constraint(fd, get_longitude_index_left(), 1,
-                                get_longitude_index_right());
-
-    d_grid->get_array()->add_constraint(get_lon_dim(),
-                                        get_longitude_index_left(),
-                                        1, get_longitude_index_right());
+    if (get_longitude_index_right() >= 0) {
+        d_longitude->add_constraint(fd, get_longitude_index_left(), 1,
+                                    get_longitude_index_right(), false);
+        d_grid->get_array()->add_constraint(get_lon_dim(),
+                                            get_longitude_index_left(),
+                                            1, get_longitude_index_right(), false);
+    } else {
+        d_longitude->add_constraint(fd, get_longitude_index_left(), 1, 0, true);
+        d_grid->get_array()->add_constraint(get_lon_dim(),
+                                            get_longitude_index_left(),
+                                            1, 0, true);
+    }
 
     // Transfer values from the local lat vector to the Grid's
     // Here test the sense of the latitude vector and invert the vector if the

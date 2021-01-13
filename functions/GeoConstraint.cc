@@ -481,8 +481,12 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a, Array::Dim_iter lon_di
         << ", " << get_lon_length() - 1 << endl);
 
     // Build a constraint for the left part and get those values
-    a.add_constraint(lon_dim, get_longitude_index_left(), 1,
-                     get_lon_length() - 1);
+    if ((get_lon_length()-1) >= 0) {
+        a.add_constraint(lon_dim, get_longitude_index_left(), 1,
+                         get_lon_length() - 1, false);
+    } else {
+        a.add_constraint(lon_dim, get_longitude_index_left(), 1, 0, true);
+    }
     a.set_read_p(false);
     a.read();
     DBG2(a.print_val(stderr));
@@ -500,7 +504,11 @@ void GeoConstraint::reorder_data_longitude_axis(Array &a, Array::Dim_iter lon_di
     DBG(cerr << "Constraint for the right half: " << 0
         << ", " << get_longitude_index_right() << endl);
 
-    a.add_constraint(lon_dim, 0, 1, get_longitude_index_right());
+    if (get_longitude_index_right() >= 0) {
+        a.add_constraint(lon_dim, 0, 1, get_longitude_index_right(), false);
+    } else {
+        a.add_constraint(lon_dim, 0, 1, 0, true);
+    }
     a.set_read_p(false);
     a.read();
     DBG2(a.print_val(stderr));
