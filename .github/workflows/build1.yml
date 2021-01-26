@@ -1,0 +1,59 @@
+# This is the first bes build 
+
+name: CI
+
+env:
+  prefix: ${{ github.workspace }}/build
+  jobs: 16
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ ebabs-gha ]
+  pull_request:
+    branches: [ ebabs-gha ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run
+# sequentially or in parallel
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      AWS_BUCKET_NAME: ${{ secrets.AWS_BUILD_BUCKET }}
+      
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules : true 
+    - name: Installs
+      run: |
+        set -x
+        sudo apt-get update
+        sudo apt-get install -o Acquire::Retries=3 doxygen graphviz wget gfortran libcurl4-openssl-dev
+    - name: cache-hyrax-dependencies
+      id: cache-hyrax-dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/hyrax-dependencies
+        key: hyrax-dependencies-${{ runner.os }}-actions_build
+
+    - name: build-hyrax-dependencies
+      if: steps.cache-hyrax-dependencies.outputs.cache-hit != 'true'
+      run: |
+        set -x
+        git clone https://github.com/OPENDAP/hyrax-dependencies.git
+        cd hyrax-dependencies
+        export prefix=/home/runner/hd1
+        make actions_build
+        cd ..
+    - name: configure
+      run: |
+        set -x
+        autoreconf -i
+        ./configure --with-dependencies=/home/runner/hd1/dep
+        make
