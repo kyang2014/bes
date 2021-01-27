@@ -1,4 +1,4 @@
-# This is the first bes build 
+# This is the discheck build on bes .travis.yml 
 
 name: CI
 
@@ -15,8 +15,6 @@ on:
     branches: [ ebabs-gha ]
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run
-# sequentially or in parallel
 
 jobs:
   build:
@@ -25,7 +23,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
       AWS_BUCKET_NAME: ${{ secrets.AWS_BUILD_BUCKET }}
-      
+
     steps:
     - uses: actions/checkout@v2
       with:
@@ -57,3 +55,11 @@ jobs:
         autoreconf -i
         ./configure --with-dependencies=/home/runner/hd1/dep
         make
+
+    # This step is a replication of the idea in the .travis.yml build "check".  Check with James to see that this is acceptable
+    - name: check
+      run: |
+        set -x
+        BES_BUILD=main
+        ./configure --prefix=$prefix --with-dependencies=$prefix/deps --enable-developer
+        make distcheck -j7
