@@ -46,9 +46,10 @@ jobs:
         set -x
         git clone https://github.com/OPENDAP/hyrax-dependencies.git
         cd hyrax-dependencies
-        export prefix=/home/runner/hd1
-        make actions_build
-        cd ..
+        #export prefix=/home/runner/hd1
+        #make actions_build
+        make --jobs=$jobs bison
+        #cd ..
     - name: configure
       run: |
         set -x
